@@ -29,6 +29,8 @@ class SupabaseContractTest {
   static HttpServer server;
   static ECKey signingKey;
   static String base,token;
+  static volatile Map<String,String> imageHeaders;
+  static volatile byte[] imageBody;
   static final UUID USER=UUID.fromString("30000000-0000-0000-0000-000000000001");
   static {
     try {
@@ -39,7 +41,11 @@ class SupabaseContractTest {
       server.createContext("/",exchange->{
         String path=exchange.getRequestURI().getPath();
         String response=path.endsWith("jwks.json")?new JWKSet(signingKey.toPublicJWK()).toString():path.endsWith("signup")?"{\"user\":{\"id\":\""+USER+"\"}}":path.startsWith("/storage/")?"{\"signedURL\":\"/object/sign/videos/peliculas/prueba.mp4?token=test\"}":"{\"access_token\":\""+token+"\",\"refresh_token\":\"test-refresh\",\"expires_in\":3600}";
-        exchange.getRequestBody().readAllBytes();exchange.getResponseHeaders().set("Content-Type","application/json");byte[] bytes=response.getBytes(java.nio.charset.StandardCharsets.UTF_8);exchange.sendResponseHeaders(200,bytes.length);exchange.getResponseBody().write(bytes);exchange.close();
+        byte[] received=exchange.getRequestBody().readAllBytes();
+        if(path.startsWith("/storage/v1/object/portadas/")) {
+          imageBody=received;imageHeaders=Map.of("path",path,"apikey",exchange.getRequestHeaders().getFirst("apikey"),"authorization",exchange.getRequestHeaders().getFirst("Authorization"),"type",exchange.getRequestHeaders().getFirst("Content-Type"),"upsert",exchange.getRequestHeaders().getFirst("x-upsert"));
+        }
+        exchange.getResponseHeaders().set("Content-Type","application/json");byte[] bytes=response.getBytes(java.nio.charset.StandardCharsets.UTF_8);exchange.sendResponseHeaders(200,bytes.length);exchange.getResponseBody().write(bytes);exchange.close();
       });server.start();
     }catch(Exception e){throw new ExceptionInInitializerError(e);}
   }
@@ -61,6 +67,7 @@ class SupabaseContractTest {
     mvc.perform(post("/api/auth/refresh").cookie(new jakarta.servlet.http.Cookie("cabana_refresh","test-refresh"))).andExpect(status().isOk()).andExpect(jsonPath("$.accessToken").value(token));
   }
   @Test void rolesComeFromDatabaseAndStorageUrlsAreSigned() throws Exception {
+    accounts.findById(USER).ifPresent(a->{a.role="USER";accounts.save(a);});
     mvc.perform(get("/api/config")).andExpect(status().isOk()).andExpect(jsonPath("$.demo").value(false));
     mvc.perform(get("/api/auth/me").header("Authorization","Bearer "+token)).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("USER"));
     mvc.perform(get("/api/admin/catalog").header("Authorization","Bearer "+token)).andExpect(status().isForbidden());
@@ -68,5 +75,17 @@ class SupabaseContractTest {
     mvc.perform(get("/api/admin/catalog").header("Authorization","Bearer "+token)).andExpect(status().isOk());
     var c=new Content();c.title="Contrato Storage";c.description="Prueba";c.type="MOVIE";c.releaseYear=2026;c.durationMinutes=90;c.seasons=0;c.genre="Drama";c.imageUrl="/assets/dark.jpg";c.videoPath="peliculas/prueba.mp4";c.ageRating="13+";contents.save(c);
     mvc.perform(get("/api/playback/"+c.id).header("Authorization","Bearer "+token)).andExpect(status().isOk()).andExpect(jsonPath("$.demo").value(false)).andExpect(jsonPath("$.url").value(base+"/storage/v1/object/sign/videos/peliculas/prueba.mp4?token=test"));
+  }
+  @Test void coverUploadUsesCallerJwtAndPublicKeyRatherThanServerSecret() throws Exception {
+    mvc.perform(get("/api/auth/me").header("Authorization","Bearer "+token)).andExpect(status().isOk());
+    var a=accounts.findById(USER).orElseThrow();a.role="ADMIN";accounts.save(a);
+    var file=new org.springframework.mock.web.MockMultipartFile("file","cover.png","image/png",CabanaIntegrationTest.raster("png",12,8));
+    mvc.perform(multipart("/api/admin/images").file(file).header("Authorization","Bearer "+token)).andExpect(status().isOk()).andExpect(jsonPath("$.imageUrl").value(org.hamcrest.Matchers.startsWith(base+"/storage/v1/object/public/portadas/"+USER+"/")));
+    assertThat(imageHeaders.get("apikey")).isEqualTo("test-public-key");
+    assertThat(imageHeaders.get("authorization")).isEqualTo("Bearer "+token);
+    assertThat(imageHeaders.get("type")).isEqualTo("image/png");
+    assertThat(imageHeaders.get("upsert")).isEqualTo("false");
+    assertThat(imageHeaders.get("path")).startsWith("/storage/v1/object/portadas/"+USER+"/");
+    assertThat(javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(imageBody)).getWidth()).isEqualTo(12);
   }
 }

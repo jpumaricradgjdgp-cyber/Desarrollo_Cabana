@@ -5,7 +5,7 @@
   if (location.protocol !== 'file:' && !liveServer) {
     const script = document.createElement('script');
     script.type = 'module';
-    script.src = new URL('js/app.js?v=20261011', base).href;
+    script.src = new URL('js/app.js?v=20261011-2', base).href;
     script.addEventListener('error', () => window.CabanaLoading?.fail('No se pudo cargar la página. Pulsa Reintentar para volver a abrirla.'), {once:true});
     document.body.append(script);
     return;

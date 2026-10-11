@@ -19,6 +19,7 @@ Base local: `http://localhost:8080/api`. Las respuestas usan JSON. En rutas priv
 | GET | /me/progress | USER/ADMIN | Posiciones guardadas |
 | PUT | /me/progress/{id} | USER/ADMIN | Actualizar segundos |
 | GET | /playback/{id} | USER/ADMIN | Obtener URL temporal |
+| POST | /admin/images | ADMIN | Subir portada multipart (`file`), JPG/PNG hasta 5 MB |
 | GET | /admin/catalog | ADMIN | Catálogo con rutas privadas para edición |
 | POST | /admin/catalog | ADMIN | Crear contenido |
 | PUT | /admin/catalog/{id} | ADMIN | Actualizar contenido |
@@ -65,3 +66,7 @@ Cada ruta personal obtiene el usuario desde el JWT. No recibe un `userId` contro
 400 para datos incorrectos; 401 para sesión ausente o inválida; 403 para rol u origen no permitido; 404 para contenido o video inexistente; 409 para duplicados; 429 para demasiados intentos de Supabase Auth; 502/503 si falla el acceso remoto. Los errores de negocio tienen un campo `message`. Spring Security puede devolver 401/403 sin cuerpo; el frontend tiene mensajes para esos casos.
 
 Importa `docs/Cabana.postman_collection.json` para ejecutar solicitudes. Primero inicia sesión; luego consulta el catálogo para capturar un UUID. Las operaciones de alta, edición y eliminación de la colección usan un contenido nuevo de prueba.
+
+## Subir una portada
+
+`POST /api/admin/images` recibe `multipart/form-data` con el campo `file` y el JWT del administrador. Devuelve `{"imageUrl":"https://…/storage/v1/object/public/portadas/…"}`; utiliza esa URL en el JSON de alta/edición. En demo devuelve `/assets/uploads/…`, disponible durante esa ejecución. El servidor comprueba el formato real, limita dimensiones, normaliza a un máximo de 1920 px y elimina metadatos al recodificar. Devuelve 413 si supera 5 MB y 415 para formatos distintos de JPG/PNG. El navegador genera automáticamente el Content-Type y boundary de FormData.

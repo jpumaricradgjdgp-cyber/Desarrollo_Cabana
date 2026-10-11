@@ -74,4 +74,29 @@ class CabanaIntegrationTest {
     mvc.perform(put("/api/me/progress/"+id).header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content("{\"seconds\":-1}")).andExpect(status().isBadRequest());
     mvc.perform(get("/api/playback/"+id).header("Authorization","Bearer "+token)).andExpect(status().isOk()).andExpect(jsonPath("$.demo").value(true));
   }
+  static byte[] raster(String format,int width,int height) throws Exception {
+    var out=new java.io.ByteArrayOutputStream();
+    javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(width,height,java.awt.image.BufferedImage.TYPE_INT_RGB),format,out);
+    return out.toByteArray();
+  }
+  @Test void onlyAdminsCanUploadAndRasterIsServedWithSafeName() throws Exception {
+    byte[] bytes=raster("png",2500,10);
+    var file=new org.springframework.mock.web.MockMultipartFile("file","../../evil.svg","text/html",bytes);
+    mvc.perform(multipart("/api/admin/images").file(file)).andExpect(status().isUnauthorized());
+    mvc.perform(multipart("/api/admin/images").file(file).header("Authorization","Bearer "+register("imageviewer"))).andExpect(status().isForbidden());
+    var response=mvc.perform(multipart("/api/admin/images").file(file).header("Authorization","Bearer "+admin())).andExpect(status().isOk()).andReturn().getResponse();
+    String url=json.readTree(response.getContentAsString()).get("imageUrl").asText();
+    assertThat(url).matches("/assets/uploads/[a-f0-9-]{36}\\.png");
+    var image=mvc.perform(get(url)).andExpect(status().isOk()).andExpect(content().contentType("image/png")).andExpect(header().string("X-Content-Type-Options","nosniff")).andReturn().getResponse().getContentAsByteArray();
+    assertThat(javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(image)).getWidth()).isEqualTo(1920);
+  }
+  @Test void rejectsMissingUnsupportedOversizeAndExcessiveDimensions() throws Exception {
+    String token=admin();
+    mvc.perform(multipart("/api/admin/images").header("Authorization","Bearer "+token)).andExpect(status().isBadRequest());
+    for(byte[] bytes:new byte[][]{"<svg onload='alert(1)'/>".getBytes(),raster("gif",10,10)})
+      mvc.perform(multipart("/api/admin/images").file(new org.springframework.mock.web.MockMultipartFile("file","image.png","image/png",bytes)).header("Authorization","Bearer "+token)).andExpect(status().isUnsupportedMediaType());
+    mvc.perform(multipart("/api/admin/images").file(new org.springframework.mock.web.MockMultipartFile("file",new byte[0])).header("Authorization","Bearer "+token)).andExpect(status().isBadRequest());
+    mvc.perform(multipart("/api/admin/images").file(new org.springframework.mock.web.MockMultipartFile("file",new byte[5*1024*1024+1])).header("Authorization","Bearer "+token)).andExpect(status().isPayloadTooLarge());
+    mvc.perform(multipart("/api/admin/images").file(new org.springframework.mock.web.MockMultipartFile("file",raster("png",6001,1))).header("Authorization","Bearer "+token)).andExpect(status().isBadRequest());
+  }
 }

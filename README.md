@@ -101,6 +101,7 @@ cabana/
 - Registro, inicio de sesión, renovación mediante cookie HttpOnly y cierre de sesión.
 - Lista personal y progreso de reproducción por usuario.
 - Panel ADMIN con creación, edición y eliminación de contenidos.
+- Portadas desde el explorador o arrastrando una imagen, con vista previa y subida a Supabase al guardar (JPG/PNG, hasta 5 MB).
 - Validación de formularios, permisos en el servidor y errores de API.
 - URLs de reproducción temporales para un bucket privado de Supabase Storage.
 - Interfaz adaptable, navegación con teclado y menú para celular.
@@ -110,7 +111,7 @@ El frontend no necesita un proceso separado: Maven lo incorpora al backend, que 
 ## Conectar tu Supabase
 
 1. Crea tu proyecto de Supabase o usa uno existente.
-2. En SQL Editor ejecuta, en orden, `supabase/01_schema.sql`, `supabase/02_catalog.sql` y `supabase/04_halloween.sql`.
+2. En SQL Editor ejecuta, en orden, `supabase/01_schema.sql`, `supabase/02_catalog.sql`, `supabase/04_halloween.sql` y `supabase/05_portadas.sql`.
 3. En Auth activa registro con correo/contraseña y revisa la confirmación de correo. La interfaz explica cuándo debes confirmar tu cuenta.
 4. En Auth > Signing Keys usa una clave asimétrica ES256 o RS256. Esta implementación valida firma, emisor, expiración y audiencia mediante JWKS. No admite el secreto legacy HS256.
 5. En Connect copia los datos del **Session pooler, puerto 5432**. Usa la URL JDBC con `sslmode=require`. El usuario suele tener la forma `postgres.<project-ref>`; copia el valor de tu panel.
@@ -130,7 +131,7 @@ Para administrar el catálogo en Supabase, registra y confirma tu cuenta, inicia
 
 ## Añadir imágenes y videos
 
-Las portadas Stranger Things, Dark y WandaVision y el logo son tus archivos originales. El resto usa tarjetas tipográficas. Desde el panel puedes indicar una URL HTTPS de imagen o un archivo en `/assets/`.
+Las portadas Stranger Things, Dark y WandaVision y el logo son tus archivos originales. El resto usa tarjetas tipográficas. En **Panel de control → Nuevo contenido / Editar**, pulsa **Subir archivo** o arrastra una imagen a la zona de portada. Verás una vista previa antes de guardar. Acepta una imagen JPG o PNG de hasta 5 MB. Al guardar se sube al bucket público `portadas` de Supabase usando tu sesión ADMIN; no requiere la clave privada de videos. También puedes conservar una imagen, elegir una portada recuperada o usar un enlace desde «Otras formas de elegir una portada». Consulta [Subir portadas](docs/SUBIR_PORTADAS.md).
 
 El SQL crea un bucket privado llamado `videos`. Sube allí un MP4 compatible con navegador, por ejemplo `peliculas/mi-video.mp4`. En el panel de control introduce esa ruta en **Ruta de video en Supabase**. No pegues una URL pública ni el nombre del bucket. Completa `SUPABASE_SERVICE_ROLE_KEY` en el backend con la clave legacy `service_role` JWT. Esta clave nunca se envía al frontend. Java genera enlaces válidos durante dos horas.
 
@@ -160,7 +161,7 @@ Para producción establece el perfil `supabase`, las credenciales del backend, e
 
 ## Verificación y alcance
 
-El backend fue compilado y comprobado con pruebas de integración en el perfil demo; la interfaz también se comprobó desde un navegador en escritorio y a 390 px. Consulta `docs/VERIFICACION.md` para el detalle. También se verificó la conexión real a PostgreSQL de Supabase: esquema `cabana`, migraciones 01/02/04, perfil `supabase` y API con 13 títulos y 9 géneros. La clave pública de Auth y sus claves de firma respondieron correctamente. El registro y el inicio de sesión con una cuenta real requieren una prueba del usuario con confirmación por correo. Los videos reales necesitan archivos y configuración de Storage.
+El backend fue compilado y comprobado con pruebas de integración en el perfil demo; la interfaz también se comprobó desde un navegador en escritorio y a 390 px. Consulta `docs/VERIFICACION.md` para el detalle. También se verificó la conexión real a PostgreSQL de Supabase: esquema `cabana`, migraciones 01/02/04/05, perfil `supabase` y API con 13 títulos y 9 géneros. La clave pública de Auth y sus claves de firma respondieron correctamente. El registro y el inicio de sesión con una cuenta real requieren una prueba del usuario con confirmación por correo. Los videos reales necesitan archivos y configuración de Storage.
 
 Esta primera versión es un MVP académico. Cada título tiene una sola ruta de video; la gestión de temporadas y episodios independientes queda para una ampliación. No incluye pagos, suscripciones, perfiles familiares, recuperación de contraseña, DRM ni transcodificación HLS. Antes de abrirlo a usuarios reales deben incorporarse recuperación de cuenta, límites de peticiones, observabilidad y pruebas con la infraestructura elegida. La reproducción MP4 y las URLs temporales cubren el flujo básico solicitado.
 

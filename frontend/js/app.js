@@ -2,23 +2,24 @@ import {frontendUrl,assetUrl,contentImageUrl} from './paths.js';
 import {seasonalAnnouncement,halloweenRecommendation,setupHalloween,configureHalloween,addHalloweenVisitor,syncSeasonToggle} from './halloween.js';
 import {svg} from './components/icons.js';
 import {posterLibrary} from './data/posters.js';
+import {imageUploadMarkup,setupImageUpload} from './components/image-upload.js';
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state = { catalog:[], genres:[], list:[], progress:[], token:null, user:null, demo:false, query:'', genre:new URLSearchParams(location.search).get('genre')||'', slide:0, refresh:null, loaded:false, admin:[] };
-let toastTimer, expiryTimer, progressTimer, activeVideoId;
+let toastTimer, expiryTimer, progressTimer, activeVideoId, imagePicker, editorSaving=false;
 function toast(message) { $('#toast').textContent=message;$('#toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),4200); }
-async function request(path,{method='GET',body,retry=true}={}) {
+async function request(path,{method='GET',body,retry=true,timeout=12000}={}) {
   let response,responseText;
   const controller=new AbortController();
-  const deadline=setTimeout(()=>controller.abort(),12000);
+  const deadline=setTimeout(()=>controller.abort(),timeout);
   try {
-    response=await fetch(`/api${path}`,{method,credentials:'same-origin',signal:controller.signal,headers:{...(body?{'Content-Type':'application/json'}:{}),...(state.token?{Authorization:`Bearer ${state.token}`}:{})},...(body?{body:JSON.stringify(body)}:{})});
+    response=await fetch(`/api${path}`,{method,credentials:'same-origin',signal:controller.signal,headers:{...(body&&!(body instanceof FormData)?{'Content-Type':'application/json'}:{}),...(state.token?{Authorization:`Bearer ${state.token}`}:{})},...(body?{body:body instanceof FormData?body:JSON.stringify(body)}:{})});
     responseText=await response.text();
   } catch(error) {
     throw new Error(error.name==='AbortError'?'La conexión está tardando demasiado. Vuelve a intentarlo.':'No se pudo conectar con Cabaña. Comprueba la conexión y vuelve a intentarlo.');
   } finally {clearTimeout(deadline);}
   if(response.status===401 && state.token && retry && !path.startsWith('/auth/')) {
-    try {await refreshSession();return request(path,{method,body,retry:false});}catch{await clearSession();}
+    try {await refreshSession();return request(path,{method,body,retry:false,timeout});}catch{await clearSession();}
   }
   if(!response.ok) { let data;try{data=JSON.parse(responseText);}catch{} throw new Error(data?.message || (response.status===401?'Inicia sesión para continuar.':response.status===403?'No tienes permiso para realizar esta acción.':'No se pudo completar la solicitud.')); }
   if(response.status===204 || response.headers.get('content-length')==='0')return null;
@@ -139,12 +140,13 @@ async function reloadCatalog(){[state.catalog,state.genres]=await Promise.all([r
 function editor(id){
   const c=id==='new'?{}:state.admin.find(c=>c.id===id);if(!c)return;
   const field=(name,label,type='text',extra='')=>`<div class="form-field"><label for="edit-${name}">${label}</label><input id="edit-${name}" name="${name}" type="${type}" value="${esc(c[name]??'')}" ${extra}></div>`;
-  $('#editor-dialog').innerHTML=`<button class="icon-button dialog-close" data-close="editor-dialog" aria-label="Cerrar formulario">${svg('close')}</button><h2>${id==='new'?'Nuevo contenido':'Editar contenido'}</h2><form id="editor-form" data-id="${id}"><div class="form-grid"><div class="full">${field('title','Título','text','required maxlength="150"')}</div><div class="form-field full"><label for="edit-description">Descripción</label><textarea id="edit-description" name="description" required maxlength="2000">${esc(c.description??'')}</textarea></div><div class="form-field"><label for="edit-type">Tipo</label><select id="edit-type" name="type"><option value="MOVIE" ${c.type==='MOVIE'?'selected':''}>Película</option><option value="SERIES" ${c.type==='SERIES'?'selected':''}>Serie</option></select></div>${field('genre','Género','text','required maxlength="30"')}${field('releaseYear','Año','number','required min="1888" max="2100"')}${field('durationMinutes','Duración en minutos','number','required min="1" max="1500"')}${field('seasons','Temporadas (0 para películas)','number','required min="0" max="100"')}<div class="form-field"><label for="edit-ageRating">Clasificación</label><select id="edit-ageRating" name="ageRating">${['ATP','7+','13+','16+','18+'].map(r=>`<option ${c.ageRating===r?'selected':''}>${r}</option>`).join('')}</select></div><div class="full">${field('imageUrl','Imagen (URL HTTPS o /assets/)','text','required maxlength="1000"')}<details class="poster-library"><summary>Elegir una portada recuperada</summary><p>Selecciona la imagen que corresponda al contenido que estás editando.</p><div class="poster-library-grid">${posterLibrary.map(p=>`<button type="button" data-poster="${esc(p.path)}" aria-label="Usar portada: ${esc(p.label)}"><img src="${assetUrl(p.path.slice(8))}" alt="" loading="lazy"><span>${esc(p.label)}</span></button>`).join('')}</div></details>${field('videoPath','Ruta de video en Supabase (opcional)','text','maxlength="1000" placeholder="peliculas/mi-video.mp4"')}</div></div><label class="checkbox-field"><input name="featured" type="checkbox" ${c.featured?'checked':''}>Mostrar en destacados</label><p id="editor-error" class="form-error" role="alert"></p><button type="submit" class="button primary">Guardar contenido</button></form>`;
+  $('#editor-dialog').innerHTML=`<button class="icon-button dialog-close" data-close="editor-dialog" aria-label="Cerrar formulario">${svg('close')}</button><h2>${id==='new'?'Nuevo contenido':'Editar contenido'}</h2><form id="editor-form" data-id="${id}"><div class="form-grid"><div class="full">${field('title','Título','text','required maxlength="150"')}</div><div class="form-field full"><label for="edit-description">Descripción</label><textarea id="edit-description" name="description" required maxlength="2000">${esc(c.description??'')}</textarea></div><div class="form-field"><label for="edit-type">Tipo</label><select id="edit-type" name="type"><option value="MOVIE" ${c.type==='MOVIE'?'selected':''}>Película</option><option value="SERIES" ${c.type==='SERIES'?'selected':''}>Serie</option></select></div>${field('genre','Género','text','required maxlength="30"')}${field('releaseYear','Año','number','required min="1888" max="2100"')}${field('durationMinutes','Duración en minutos','number','required min="1" max="1500"')}${field('seasons','Temporadas (0 para películas)','number','required min="0" max="100"')}<div class="form-field"><label for="edit-ageRating">Clasificación</label><select id="edit-ageRating" name="ageRating">${['ATP','7+','13+','16+','18+'].map(r=>`<option ${c.ageRating===r?'selected':''}>${r}</option>`).join('')}</select></div><div class="full">${imageUploadMarkup}<details class="image-options"><summary>Otras formas de elegir una portada</summary>${field('imageUrl','Enlace de imagen (opcional)','text','maxlength="1000" placeholder="https://…"')}<details class="poster-library"><summary>Elegir una portada recuperada</summary><p>Selecciona la imagen que corresponda al contenido que estás editando.</p><div class="poster-library-grid">${posterLibrary.map(p=>`<button type="button" data-poster="${esc(p.path)}" aria-label="Usar portada: ${esc(p.label)}"><img src="${assetUrl(p.path.slice(8))}" alt="" loading="lazy"><span>${esc(p.label)}</span></button>`).join('')}</div></details></details>${field('videoPath','Ruta de video en Supabase (opcional)','text','maxlength="1000" placeholder="peliculas/mi-video.mp4"')}</div></div><label class="checkbox-field"><input name="featured" type="checkbox" ${c.featured?'checked':''}>Mostrar en destacados</label><p id="editor-error" class="form-error" role="alert"></p><button type="submit" class="button primary">Guardar contenido</button></form>`;
+  imagePicker?.dispose();imagePicker=setupImageUpload($('#editor-form'),request);
   $('#editor-dialog').showModal();
 }
 document.addEventListener('click',async event=>{
   const b=event.target.closest('button,a');if(!b)return;
-  if(b.dataset.close)$('#'+b.dataset.close).close();
+  if(b.dataset.close&&!(b.dataset.close==='editor-dialog'&&editorSaving))$('#'+b.dataset.close).close();
   if(b.dataset.detail)showDetail(b.dataset.detail);
   if(b.dataset.play)await play(b.dataset.play);
   if(b.dataset.save)await toggleSave(b.dataset.save);
@@ -153,7 +155,7 @@ document.addEventListener('click',async event=>{
   if(b.dataset.genre){location.assign(pageLink('genres')+'?genre='+encodeURIComponent(b.dataset.genre));}
   if(b.dataset.filter!==undefined){state.genre=b.dataset.filter;render();}
   if(b.dataset.edit)editor(b.dataset.edit);
-  if(b.dataset.poster){$('#edit-imageUrl').value=b.dataset.poster;toast('Portada seleccionada. Guarda el contenido para aplicar el cambio.');}
+  if(b.dataset.poster){imagePicker.useExisting(b.dataset.poster);toast('Portada seleccionada. Guarda el contenido para aplicar el cambio.');}
   if(b.dataset.delete){const c=state.catalog.find(c=>c.id===b.dataset.delete);if(confirm(`¿Eliminar “${c.title}” del catálogo?`)){try{await request(`/admin/catalog/${c.id}`,{method:'DELETE'});await reloadCatalog();await render();toast('Contenido eliminado.');}catch(e){toast(e.message);}}}
   if(b.classList.contains('password-toggle')){const input=$('#password');input.type=input.type==='password'?'text':'password';b.setAttribute('aria-label',input.type==='password'?'Mostrar contraseña':'Ocultar contraseña');}
   if(b.dataset.action==='logout'){try{await request('/auth/logout',{method:'POST'});}finally{await clearSession();navigate('home');toast('Has cerrado sesión.');}}
@@ -165,8 +167,9 @@ document.addEventListener('submit',async event=>{
     $('#auth-error').textContent='';
     try{const session=await request(form.dataset.register==='true'?'/auth/register':'/auth/login',{method:'POST',body:data});acceptSession(session);if(session.accessToken){await loadUser();navigate('home');toast('Bienvenido a Cabaña.');}else{$('#auth-error').textContent=session.message;form.reset();}}catch(e){$('#auth-error').textContent=e.message;}finally{submit.disabled=false;}
   }else{
+    editorSaving=true;form.inert=true;const picker=imagePicker;const close=$('#editor-dialog .dialog-close');close.disabled=true;
     $('#editor-error').textContent='';for(const k of ['releaseYear','durationMinutes','seasons'])data[k]=Number(data[k]);data.featured=form.elements.featured.checked;
-    try{const id=form.dataset.id;await request(id==='new'?'/admin/catalog':`/admin/catalog/${id}`,{method:id==='new'?'POST':'PUT',body:data});$('#editor-dialog').close();await reloadCatalog();await render();toast('Contenido guardado.');}catch(e){$('#editor-error').textContent=e.message;}finally{submit.disabled=false;}
+    try{submit.textContent='Guardando…';data.imageUrl=await picker.upload();const id=form.dataset.id;await request(id==='new'?'/admin/catalog':`/admin/catalog/${id}`,{method:id==='new'?'POST':'PUT',body:data});$('#editor-dialog').close();await reloadCatalog();await render();toast('Contenido guardado.');}catch(e){$('#editor-error').textContent=e.message;}finally{submit.disabled=false;submit.textContent='Guardar contenido';close.disabled=false;editorSaving=false;form.inert=false;picker.release();}
   }
 });
 $('#search-icon').innerHTML=svg('search');$('#menu-toggle').innerHTML=svg('menu');
@@ -176,7 +179,9 @@ $('#search').addEventListener('input',event=>{state.query=event.target.value;ren
 document.addEventListener('keydown',event=>{if(event.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){event.preventDefault();$('#search').focus();}});
 window.addEventListener('hashchange',()=>{state.query='';state.genre=state.pendingGenre||'';state.pendingGenre=null;$('#search').value='';window.scrollTo(0,0);render();});
 $('#player-dialog').addEventListener('close',async()=>{clearInterval(progressTimer);await savePosition();$('#player-dialog video')?.pause();if(state.user){try{state.progress=await request('/me/progress');await render();}catch{}}});
-for(const d of document.querySelectorAll('dialog'))d.addEventListener('click',event=>{if(event.target===d){const rect=d.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)d.close();}});
+$('#editor-dialog').addEventListener('close',()=>imagePicker?.dispose());
+$('#editor-dialog').addEventListener('cancel',event=>{if(editorSaving)event.preventDefault();});
+for(const d of document.querySelectorAll('dialog'))d.addEventListener('click',event=>{if(event.target===d&&!(d.id==='editor-dialog'&&editorSaving)){const rect=d.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)d.close();}});
 setupHalloween({getCatalog:()=>state.catalog,applyTheme,render,showDetail,toast,esc,svg});
 syncTheme();renderNavigation();
 try{
