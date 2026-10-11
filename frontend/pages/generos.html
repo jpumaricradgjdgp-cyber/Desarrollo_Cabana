@@ -4,7 +4,7 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Elige el género que quieres descubrir.">
   <meta name="theme-color" content="#0b101c"><title>Géneros · Cabaña</title>
-  <link rel="icon" href="../assets/bonfire.png"><link rel="stylesheet" href="../css/styles.css"><link rel="stylesheet" href="../css/halloween.css"><link rel="stylesheet" href="../css/cabana.css">
+  <link rel="icon" href="../assets/bonfire.png"><link rel="stylesheet" href="../css/styles.css"><link rel="stylesheet" href="../css/halloween.css"><link rel="stylesheet" href="../css/cabana.css"><link rel="stylesheet" href="../css/loading.css?v=20261011">
   <script>try { const theme=localStorage.getItem('cabana-theme'); if(['dark','light','halloween'].includes(theme)) document.documentElement.dataset.theme=theme; } catch {}</script>
 </head>
 <body data-page="genres">
@@ -21,7 +21,7 @@
       <div class="topbar-actions"><button id="halloween-toggle" class="theme-button season-button" aria-label="Abrir especial de Halloween"><img id="halloween-icon" src="../assets/ghost.png" alt=""></button><button id="theme-toggle" class="theme-button" aria-label="Elegir tema"><img id="theme-icon" src="../assets/bonfire.png" alt=""></button><div id="account-actions"></div></div>
     </header>
     <!-- Página Géneros. La API Java proporciona sus datos. Estilos y lógica se comparten con las demás páginas. -->
-    <main id="main" tabindex="-1"><section class="page-heading"><h1>Géneros</h1><p>Elige el género que quieres descubrir.</p></section><div class="loading" role="status">Cargando…</div></main>
+    <main id="main" tabindex="-1"><section class="app-loading" role="status" aria-live="polite" aria-label="Cargando Cabaña"><div class="loading-scene"><span class="loading-orbit"></span><img class="loading-fire" src="../assets/bonfire.png" alt=""><svg class="loading-runner" viewBox="0 0 170 160" aria-hidden="true"><g class="runner-speed" stroke="#c78cf2" stroke-width="4" stroke-linecap="round"><path d="M15 57h22M7 79h23M18 101h20"/></g><path d="M37 148h100" stroke="currentColor" opacity=".18" stroke-width="3" stroke-linecap="round"/><g class="runner-body"><g fill="none" stroke="#525c54" stroke-width="16" stroke-linecap="round"><path class="runner-leg-left" d="M85 92l-19 26 13 20"/><path class="runner-leg-right" d="M85 92l20 21 18 15"/></g><path d="M75 59h24l7 35H73Z" fill="#566d61" stroke="#293e37" stroke-width="3"/><g class="runner-arm-left" fill="none" stroke="#738577" stroke-width="11" stroke-linecap="round"><path d="M81 64l-19 13-10-9"/></g><g class="runner-arm-right"><path d="M81 64l22 16 16-13" fill="none" stroke="#738577" stroke-width="11" stroke-linecap="round"/><path d="M116 65l6-16" stroke="#704c35" stroke-width="7" stroke-linecap="round"/><path d="m120 51 8-27 5 27-10 6Z" fill="#d3e7ef" stroke="#758e9c" stroke-width="2"/></g><ellipse cx="88" cy="40" rx="23" ry="27" fill="#eee8d4" stroke="#3d4449" stroke-width="3"/><g fill="#393f48"><ellipse cx="79" cy="38" rx="5" ry="6"/><ellipse cx="98" cy="38" rx="5" ry="6"/><circle cx="80" cy="23" r="2"/><circle cx="94" cy="22" r="2"/><circle cx="73" cy="47" r="2"/><circle cx="103" cy="47" r="2"/><circle cx="79" cy="57" r="2"/><circle cx="88" cy="60" r="2"/><circle cx="97" cy="57" r="2"/></g><path d="m83 28 10 0-5 5Z" fill="#d27163"/><path d="m73 46 7 4m24-4-7 4" stroke="#d27163" stroke-width="3" stroke-linecap="round"/></g></svg></div><h1 class="loading-title">Cargando Cabaña…</h1><p class="loading-message">Estamos preparando tus historias.</p><div class="loading-track" aria-hidden="true"><span></span></div><p class="loading-caption loading-normal-caption">Una buena historia empieza junto a la fogata.</p><p class="loading-caption loading-halloween-caption">Jason corre. Tu película está por llegar.</p><button type="button" class="button primary loading-retry" hidden>Reintentar</button></section><noscript>Activa JavaScript en tu navegador para abrir el catálogo de Cabaña.</noscript></main>
     <footer><span>Cabaña</span><span>Las mejores historias empiezan aquí.</span><span id="mode-label"></span></footer>
   </div>
   <dialog id="detail-dialog" class="detail-dialog" aria-label="Detalle del contenido"></dialog>
@@ -29,7 +29,8 @@
   <dialog id="editor-dialog" class="editor-dialog" aria-label="Editar contenido"></dialog>
   <dialog id="halloween-dialog" class="halloween-dialog" aria-labelledby="halloween-title"></dialog>
   <div id="toast" role="status" aria-live="polite"></div>
+  <script src="../js/loading.js?v=20261011"></script>
   <script src="../js/themes.js"></script>
-  <script src="../js/bootstrap.js"></script>
+  <script src="../js/bootstrap.js?v=20261011"></script>
 </body>
 </html>

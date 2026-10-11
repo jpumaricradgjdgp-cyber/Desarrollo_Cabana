@@ -95,6 +95,7 @@ cabana/
 - Sección «Lo más reciente», ordenada por año del catálogo real.
 - Biblioteca de siete portadas del frontend anterior, seleccionables desde el formulario de administración.
 - Selector de tres temas persistentes: Azul noche, Claro y Halloween. Se abre desde la fogata usando tus iconos a color y negro.
+- Carga visible con fogata animada en Azul noche/Claro y Jason corriendo con cuchillo en Halloween. Si la conexión falla, aparece un aviso y «Reintentar»; respeta la preferencia de reducir movimiento.
 - Bienvenida y menú con una cabaña entre pinos; el menú de Halloween usa tu foto de ladrillos con una capa oscura para conservar la legibilidad.
 - Modo Halloween opcional con tus iconos de Jason y fantasma, anuncio de octubre y recomendación de terror.
 - Registro, inicio de sesión, renovación mediante cookie HttpOnly y cierre de sesión.

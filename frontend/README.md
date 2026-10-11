@@ -21,4 +21,6 @@ La fogata abre Azul noche, Claro y Halloween; la preferencia persiste al navegar
 
 El panel ADMIN permite crear, consultar, editar y eliminar contenidos. Su formulario incorpora una biblioteca de siete portadas recuperadas del proyecto anterior: seleccionar una rellena la ruta de imagen y guardar aplica el cambio. No agrega películas ni videos automáticamente. El catálogo usa los mismos permisos y autenticación de Supabase que el resto de la aplicación. El token de acceso se mantiene en memoria y la renovación en una cookie HttpOnly.
 
+`css/loading.css` y `js/loading.js` controlan la carga inicial: fogata animada en los temas normales y Jason corriendo en Halloween. El HTML incluye la ilustración SVG decorativa para mostrarla antes de que termine de cargar el módulo principal. Un aviso de lentitud, un límite de espera y «Reintentar» permiten distinguir la carga real de un fallo. Consulta `docs/CARGA_Y_ACCESO.md` desde la raíz del proyecto.
+
 Los avisos de Chrome DevTools y del WebSocket de Live Server pertenecen a esas herramientas. No hace falta desactivar la seguridad ni poner claves privadas en el HTML.

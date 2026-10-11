@@ -48,3 +48,9 @@ Se comprobó JDBC contra PostgreSQL 17.6, se creó el esquema `cabana` y se ejec
 La compilación limpia final completó las diez pruebas del backend. Se comprobó la nueva estructura css/js/pages/assets desde Java, nueve HTML con doble clic y ocho vistas simuladas de Live Server: cero errores JavaScript y recursos 404. Los tres temas conservaron sus imágenes y preferencias entre páginas, con anchos de 320 a 1366 px sin desbordamiento horizontal. «Lo más reciente» presentó los tres títulos esperados según el año de la API real y abrió sus detalles. Las siete portadas servidas coinciden con los archivos originales por SHA256.
 
 El formulario ADMIN se probó en demo: carga de siete imágenes, selección de portada, creación, edición persistida y eliminación del registro de prueba. No se usó el administrador demo contra la base real. El lanzador Supabase detectó la instancia abierta y terminó correctamente sin iniciar otra en el mismo puerto.
+
+## Carga y rol administrador
+
+Se comprobó la fogata en Azul noche y Claro, la ilustración de Jason corriendo en Halloween, el cambio real de los fotogramas mediante CSS, el ancho de 320 px y la desactivación de animaciones con movimiento reducido. Se simularon API lenta, tiempo de espera agotado, módulo JavaScript inaccesible y módulo que no termina de inicializar. El aviso de lentitud, el error, «Reintentar» y la recuperación del catálogo funcionaron. Se repitieron las nueve páginas, los tres temas, las vistas estáticas y el selector de portadas con CRUD demo sin errores JS ni recursos 404 en el funcionamiento normal.
+
+Se verificó que la cuenta elegida por el usuario existe en Supabase Auth y tiene el correo confirmado; se asignó y consultó su rol ADMIN en `cabana.accounts`. No se consultó ni modificó su contraseña. El inicio de sesión real sigue utilizando la contraseña que el usuario ya estableció.

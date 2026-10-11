@@ -1,0 +1,33 @@
+.app-loading{min-height:calc(100vh - 210px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:45px 20px;text-align:center;border:1px solid var(--line);border-radius:18px;background:radial-gradient(ellipse at 50% 45%,#246cff14,transparent 65%),var(--surface)}
+.loading-scene{width:200px;height:165px;position:relative;display:grid;place-items:center;margin-bottom:16px}
+.loading-fire{width:83px;height:83px;animation:fire-glow 1.6s ease-in-out infinite;filter:drop-shadow(0 0 22px #f0a94545)}
+.loading-orbit{position:absolute;width:133px;height:133px;border:1px solid var(--line);border-radius:50%;animation:orbit-turn 3s linear infinite}
+.loading-orbit:before{content:'';position:absolute;top:8px;left:22px;width:10px;height:10px;background:var(--blue);box-shadow:0 0 15px var(--blue);border-radius:50%}
+.loading-runner{display:none;width:166px;height:155px;overflow:visible;filter:drop-shadow(0 8px 12px #0003)}
+.runner-body{animation:runner-bob .42s ease-in-out infinite}
+.runner-leg-left{transform-origin:85px 92px;animation:runner-limb .42s ease-in-out infinite alternate}
+.runner-leg-right{transform-origin:85px 92px;animation:runner-limb .42s ease-in-out infinite alternate-reverse}
+.runner-arm-left{transform-origin:81px 64px;animation:runner-limb .42s ease-in-out infinite alternate-reverse}
+.runner-arm-right{transform-origin:81px 64px;animation:runner-limb .42s ease-in-out infinite alternate}
+.runner-speed{animation:runner-speed .6s ease-in-out infinite alternate}
+.loading-title{font-size:24px;letter-spacing:-.5px;margin-bottom:10px;color:var(--text)}
+.loading-message{font-size:13px;color:var(--muted);max-width:380px;line-height:1.7;min-height:44px}
+.loading-caption{font-size:11px;color:var(--muted);margin-top:18px}
+.loading-halloween-caption{display:none}
+.loading-track{width:180px;height:4px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:22px}
+.loading-track span{display:block;width:40%;height:100%;border-radius:4px;background:var(--blue);animation:loading-travel 1.4s ease-in-out infinite alternate}
+.loading-retry{margin-top:20px}
+.app-loading [hidden]{display:none!important}
+:root[data-theme=halloween] .app-loading{background:radial-gradient(ellipse at 50% 45%,#f7973a18,transparent 65%),var(--surface)}
+:root[data-theme=halloween] .loading-fire,:root[data-theme=halloween] .loading-orbit,:root[data-theme=halloween] .loading-normal-caption{display:none}
+:root[data-theme=halloween] .loading-runner,:root[data-theme=halloween] .loading-halloween-caption{display:block}
+.loading-failed .loading-caption{display:none}
+.loading-failed .loading-scene *{animation-play-state:paused}
+@keyframes fire-glow{50%{transform:translateY(-5px) scale(1.06);filter:drop-shadow(0 0 30px #f0a94585)}}
+@keyframes orbit-turn{to{transform:rotate(360deg)}}
+@keyframes runner-bob{50%{transform:translateY(-5px)}}
+@keyframes runner-limb{from{transform:rotate(-28deg)}to{transform:rotate(28deg)}}
+@keyframes runner-speed{to{transform:translateX(-8px);opacity:.4}}
+@keyframes loading-travel{from{transform:translateX(-10%)}to{transform:translateX(160%)}}
+@media(prefers-reduced-motion:reduce){.loading-scene *,.loading-track span{animation:none!important}.loading-track span{width:100%}}
+@media(max-width:520px){.app-loading{min-height:calc(100vh - 185px);padding:35px 18px}.loading-title{font-size:22px}}

@@ -8,13 +8,21 @@ const state = { catalog:[], genres:[], list:[], progress:[], token:null, user:nu
 let toastTimer, expiryTimer, progressTimer, activeVideoId;
 function toast(message) { $('#toast').textContent=message;$('#toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),4200); }
 async function request(path,{method='GET',body,retry=true}={}) {
-  let response=await fetch(`/api${path}`,{method,credentials:'same-origin',headers:{...(body?{'Content-Type':'application/json'}:{}),...(state.token?{Authorization:`Bearer ${state.token}`}:{})},...(body?{body:JSON.stringify(body)}:{})});
+  let response,responseText;
+  const controller=new AbortController();
+  const deadline=setTimeout(()=>controller.abort(),12000);
+  try {
+    response=await fetch(`/api${path}`,{method,credentials:'same-origin',signal:controller.signal,headers:{...(body?{'Content-Type':'application/json'}:{}),...(state.token?{Authorization:`Bearer ${state.token}`}:{})},...(body?{body:JSON.stringify(body)}:{})});
+    responseText=await response.text();
+  } catch(error) {
+    throw new Error(error.name==='AbortError'?'La conexión está tardando demasiado. Vuelve a intentarlo.':'No se pudo conectar con Cabaña. Comprueba la conexión y vuelve a intentarlo.');
+  } finally {clearTimeout(deadline);}
   if(response.status===401 && state.token && retry && !path.startsWith('/auth/')) {
     try {await refreshSession();return request(path,{method,body,retry:false});}catch{await clearSession();}
   }
-  if(!response.ok) { let data;try{data=await response.json();}catch{} throw new Error(data?.message || (response.status===401?'Inicia sesión para continuar.':response.status===403?'No tienes permiso para realizar esta acción.':'No se pudo completar la solicitud.')); }
+  if(!response.ok) { let data;try{data=JSON.parse(responseText);}catch{} throw new Error(data?.message || (response.status===401?'Inicia sesión para continuar.':response.status===403?'No tienes permiso para realizar esta acción.':'No se pudo completar la solicitud.')); }
   if(response.status===204 || response.headers.get('content-length')==='0')return null;
-  const text=await response.text();return text?JSON.parse(text):null;
+  return responseText?JSON.parse(responseText):null;
 }
 function acceptSession(session) {
   state.token=session.accessToken;clearTimeout(expiryTimer);
@@ -172,7 +180,9 @@ for(const d of document.querySelectorAll('dialog'))d.addEventListener('click',ev
 setupHalloween({getCatalog:()=>state.catalog,applyTheme,render,showDetail,toast,esc,svg});
 syncTheme();renderNavigation();
 try{
+  window.CabanaLoading?.message('Abriendo la Cabaña…');
   const config=await request('/config');state.demo=config.demo;configureHalloween(config);$('#mode-label').textContent=config.demo?'Demostración académica':'Cabaña · Streaming';
-  await reloadCatalog();try{await refreshSession();await loadUser();}catch{await clearSession();}
+  window.CabanaLoading?.message('Preparando el catálogo de películas y series…');
+  await reloadCatalog();window.CabanaLoading?.message('Comprobando tu sesión…');try{await refreshSession();await loadUser();}catch{await clearSession();}
   state.loaded=true;await render();
-}catch(e){$('#main').innerHTML=empty('La Cabaña todavía no está encendida','Inicia el backend Java y vuelve a cargar esta página.');toast(e.message);}
+}catch(e){window.CabanaLoading?.fail(e.message);toast(e.message);}
