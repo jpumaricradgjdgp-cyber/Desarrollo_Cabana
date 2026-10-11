@@ -26,6 +26,15 @@ Si abres los HTML con doble clic, verás el CSS y una guía para iniciar el serv
 
 Si usas Live Server de VS Code en el puerto 5500, solo sirve la vista estática del diseño. Allí no existe `/api/config`; usa el enlace a `localhost:8080` que muestra la página, después de iniciar `Iniciar_Cabana.cmd`. Las imágenes y los enlaces se resuelven desde la carpeta del frontend.
 
+Si aparece **Port 8080 was already in use**, inicia el modo demo en otro puerto desde PowerShell:
+
+```powershell
+$env:PORT="8081"
+.\Iniciar_Cabana.cmd
+```
+
+En ese caso abre `http://localhost:8081`. El lanzador configura también el origen permitido para que el login y el registro usen el mismo puerto. Para volver al puerto habitual usa `$env:PORT="8080"` antes de iniciar.
+
 ## Descargar desde GitHub
 
 El repositorio de esta versión es [Desarrollo_Cabana](https://github.com/jpumaricradgjdgp-cyber/Desarrollo_Cabana). Incluye el backend, las páginas HTML, los estilos, las imágenes, los scripts SQL, las pruebas y la documentación.
