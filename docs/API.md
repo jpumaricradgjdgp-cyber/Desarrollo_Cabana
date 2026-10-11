@@ -70,3 +70,5 @@ Importa `docs/Cabana.postman_collection.json` para ejecutar solicitudes. Primero
 ## Subir una portada
 
 `POST /api/admin/images` recibe `multipart/form-data` con el campo `file` y el JWT del administrador. Devuelve `{"imageUrl":"https://…/storage/v1/object/public/portadas/…"}`; utiliza esa URL en el JSON de alta/edición. En demo devuelve `/assets/uploads/…`, disponible durante esa ejecución. El servidor comprueba el formato real, limita dimensiones, normaliza a un máximo de 1920 px y elimina metadatos al recodificar. Devuelve 413 si supera 5 MB y 415 para formatos distintos de JPG/PNG. El navegador genera automáticamente el Content-Type y boundary de FormData.
+
+El frontend también permite WebP y AVIF, incluso descargados con extensión JPG: detecta la firma real y los convierte mediante canvas antes del envío. La API continúa recibiendo únicamente raster JPG/PNG y verificándolos en Java. No se cambia la lista de tipos permitidos del bucket ni se admiten SVG.

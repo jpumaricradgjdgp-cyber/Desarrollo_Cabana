@@ -25,4 +25,4 @@ El panel ADMIN permite crear, consultar, editar y eliminar contenidos. Su formul
 
 Los avisos de Chrome DevTools y del WebSocket de Live Server pertenecen a esas herramientas. No hace falta desactivar la seguridad ni poner claves privadas en el HTML.
 
-La portada se puede elegir desde el explorador o arrastrar a la zona de subida: `js/components/image-upload.js` muestra la vista previa y `css/image-upload.css` adapta el área a los tres temas. Acepta una imagen JPG/PNG de hasta 5 MB. Al guardar envía `FormData` a `/api/admin/images` antes de guardar el contenido. La selección anterior de portadas y enlaces sigue en «Otras formas de elegir una portada».
+La portada se puede elegir desde el explorador o arrastrar a la zona de subida: `js/components/image-upload.js` muestra la vista previa y `css/image-upload.css` adapta el área a los tres temas. Acepta una imagen JPG, PNG, WebP o AVIF de hasta 5 MB. Al guardar envía `FormData` a `/api/admin/images` antes de guardar el contenido. La selección anterior de portadas y enlaces sigue en «Otras formas de elegir una portada».

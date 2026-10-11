@@ -2,7 +2,7 @@ import {frontendUrl,assetUrl,contentImageUrl} from './paths.js';
 import {seasonalAnnouncement,halloweenRecommendation,setupHalloween,configureHalloween,addHalloweenVisitor,syncSeasonToggle} from './halloween.js';
 import {svg} from './components/icons.js';
 import {posterLibrary} from './data/posters.js';
-import {imageUploadMarkup,setupImageUpload} from './components/image-upload.js';
+import {imageUploadMarkup,setupImageUpload} from './components/image-upload.js?v=20261011-3';
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state = { catalog:[], genres:[], list:[], progress:[], token:null, user:null, demo:false, query:'', genre:new URLSearchParams(location.search).get('genre')||'', slide:0, refresh:null, loaded:false, admin:[] };

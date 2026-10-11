@@ -101,7 +101,7 @@ cabana/
 - Registro, inicio de sesión, renovación mediante cookie HttpOnly y cierre de sesión.
 - Lista personal y progreso de reproducción por usuario.
 - Panel ADMIN con creación, edición y eliminación de contenidos.
-- Portadas desde el explorador o arrastrando una imagen, con vista previa y subida a Supabase al guardar (JPG/PNG, hasta 5 MB).
+- Portadas desde el explorador o arrastrando una imagen, con vista previa y subida a Supabase al guardar (JPG, PNG, WebP o AVIF, hasta 5 MB).
 - Validación de formularios, permisos en el servidor y errores de API.
 - URLs de reproducción temporales para un bucket privado de Supabase Storage.
 - Interfaz adaptable, navegación con teclado y menú para celular.
@@ -131,7 +131,7 @@ Para administrar el catálogo en Supabase, registra y confirma tu cuenta, inicia
 
 ## Añadir imágenes y videos
 
-Las portadas Stranger Things, Dark y WandaVision y el logo son tus archivos originales. El resto usa tarjetas tipográficas. En **Panel de control → Nuevo contenido / Editar**, pulsa **Subir archivo** o arrastra una imagen a la zona de portada. Verás una vista previa antes de guardar. Acepta una imagen JPG o PNG de hasta 5 MB. Al guardar se sube al bucket público `portadas` de Supabase usando tu sesión ADMIN; no requiere la clave privada de videos. También puedes conservar una imagen, elegir una portada recuperada o usar un enlace desde «Otras formas de elegir una portada». Consulta [Subir portadas](docs/SUBIR_PORTADAS.md).
+Las portadas Stranger Things, Dark y WandaVision y el logo son tus archivos originales. El resto usa tarjetas tipográficas. En **Panel de control → Nuevo contenido / Editar**, pulsa **Subir archivo** o arrastra una imagen a la zona de portada. Verás una vista previa antes de guardar. Acepta una imagen JPG, PNG, WebP o AVIF de hasta 5 MB. Al guardar se sube al bucket público `portadas` de Supabase usando tu sesión ADMIN; no requiere la clave privada de videos. También puedes conservar una imagen, elegir una portada recuperada o usar un enlace desde «Otras formas de elegir una portada». Consulta [Subir portadas](docs/SUBIR_PORTADAS.md).
 
 El SQL crea un bucket privado llamado `videos`. Sube allí un MP4 compatible con navegador, por ejemplo `peliculas/mi-video.mp4`. En el panel de control introduce esa ruta en **Ruta de video en Supabase**. No pegues una URL pública ni el nombre del bucket. Completa `SUPABASE_SERVICE_ROLE_KEY` en el backend con la clave legacy `service_role` JWT. Esta clave nunca se envía al frontend. Java genera enlaces válidos durante dos horas.
 

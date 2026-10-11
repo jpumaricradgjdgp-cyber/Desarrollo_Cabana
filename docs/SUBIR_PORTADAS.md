@@ -6,7 +6,7 @@
 4. Revisa la vista previa. **Quitar archivo** cancela esa selección; al editar conserva la portada anterior.
 5. Completa el formulario y pulsa **Guardar contenido**. Primero se sube la portada y después se guarda el título.
 
-Una portada por contenido, JPG/JPEG o PNG, hasta 5 MB. El servidor comprueba el archivo real, rechaza imágenes mayores de 6000 px por lado o 24 megapíxeles, reduce el lado mayor a 1920 px y recodifica sin metadatos. La portada es pública porque aparece en el catálogo público. No se modifican los permisos de videos.
+Una portada por contenido: JPG/JPEG, PNG, WebP o AVIF, hasta 5 MB. WebP y AVIF se convierten en el navegador a JPG (o PNG si el navegador no permite codificar JPG) antes de enviarse. Los píxeles transparentes de esas conversiones quedan sobre fondo blanco; un PNG original conserva su transparencia. Se comprueba el formato real: un AVIF descargado con extensión .JPG también se convierte. El navegador debe poder decodificar el formato; de lo contrario se muestra un mensaje para elegir JPG o PNG. El servidor comprueba el archivo real, rechaza imágenes mayores de 6000 px por lado o 24 megapíxeles, reduce el lado mayor a 1920 px y recodifica sin metadatos. La portada es pública porque aparece en el catálogo público. No se modifican los permisos de videos.
 
 Si falla la subida, el formulario conserva la selección para reintentar. Si la imagen subió pero falló el guardado del título, el reintento reutiliza su URL. Las imágenes no se eliminan automáticamente al sustituir o borrar un contenido, para evitar borrar portadas compartidas; las imágenes sin uso se pueden revisar desde Storage.
 
@@ -23,3 +23,5 @@ En demo las portadas viven en memoria y desaparecen al reiniciar, igual que los 
 Pruebas del backend: subida ADMIN, lectura de imagen normalizada, nombres seguros, rechazo de usuarios sin permiso, formatos falsos, ausencia de archivo, tamaños y dimensiones inválidos. El contrato remoto comprueba que se envían la clave pública y el JWT del administrador. La política se comprobó en el PostgreSQL real con operaciones revertidas: acepta al ADMIN en su carpeta y rechaza otras carpetas, SVG y cuentas sin ADMIN. La subida desde una sesión real del usuario queda para su comprobación al iniciar sesión; no se ha utilizado su contraseña.
 
 Referencia: [Control de acceso de Supabase Storage](https://supabase.com/docs/guides/storage/security/access-control).
+
+Se verificó en Chrome la foto AVIF original descargada como `.JPG`: el envío directo reprodujo el rechazo 415; el formulario la convirtió, guardó como JPG válido de 980 × 551 y permitió editarla. También se comprobó arrastrar AVIF, convertir WebP y rechazar un SVG disfrazado. Referencia de conversión: [Canvas toBlob](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob).
