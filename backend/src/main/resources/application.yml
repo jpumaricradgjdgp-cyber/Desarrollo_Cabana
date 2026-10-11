@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: cabana
+  profiles:
+    default: demo
+  jpa:
+    open-in-view: false
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+cabana:
+  allowed-origin: ${FRONTEND_ORIGIN:http://localhost:8080}
+  secure-cookies: false

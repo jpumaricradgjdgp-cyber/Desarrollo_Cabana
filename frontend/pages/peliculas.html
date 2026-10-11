@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explora el catálogo de películas.">
+  <meta name="theme-color" content="#0b101c"><title>Películas · Cabaña</title>
+  <link rel="icon" href="../assets/bonfire.png"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../halloween.css">
+  <script>try { const theme=localStorage.getItem('cabana-theme'); if(['dark','light','halloween'].includes(theme)) document.documentElement.dataset.theme=theme; } catch {}</script>
+</head>
+<body data-page="movies">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="inicio.html" aria-label="Cabaña, inicio"><img src="../assets/logo.jpg" alt="Cabaña"></a>
+    <p class="nav-label">EXPLORA TU CABAÑA</p>
+    <nav id="navigation" aria-label="Navegación principal"></nav>
+    <div class="sidebar-bottom"><span class="little-fire">✦</span><p>Una buena historia.<br>Un lugar para quedarte.</p><span class="version">CABAÑA · STREAMING</span></div>
+  </aside>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="icon-button menu-button" id="menu-toggle" aria-label="Abrir menú" aria-expanded="false"></button>
+      <div class="search-wrap"><span id="search-icon"></span><input id="search" type="search" placeholder="Buscar películas, series…" aria-label="Buscar películas y series"><kbd>/</kbd></div>
+      <div class="topbar-actions"><button id="halloween-toggle" class="theme-button season-button" aria-label="Abrir especial de Halloween"><img id="halloween-icon" src="../assets/ghost.png" alt=""></button><button id="theme-toggle" class="theme-button" aria-label="Cambiar a modo claro"><img id="theme-icon" src="../assets/bonfire.png" alt=""></button><div id="account-actions"></div></div>
+    </header>
+    <!-- Página Películas. La API Java proporciona sus datos. Estilos y lógica se comparten con las demás páginas. -->
+    <main id="main" tabindex="-1"><section class="page-heading"><h1>Películas</h1><p>Explora el catálogo de películas.</p></section><div class="loading" role="status">Cargando…</div></main>
+    <footer><span>Cabaña</span><span>Las mejores historias empiezan aquí.</span><span id="mode-label"></span></footer>
+  </div>
+  <dialog id="detail-dialog" class="detail-dialog" aria-label="Detalle del contenido"></dialog>
+  <dialog id="player-dialog" class="player-dialog" aria-label="Reproductor de video"></dialog>
+  <dialog id="editor-dialog" class="editor-dialog" aria-label="Editar contenido"></dialog>
+  <dialog id="halloween-dialog" class="halloween-dialog" aria-labelledby="halloween-title"></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="../bootstrap.js"></script>
+</body>
+</html>

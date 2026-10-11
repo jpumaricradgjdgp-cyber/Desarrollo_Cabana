@@ -1,0 +1,56 @@
+:root[data-theme=halloween]{color-scheme:dark;--bg:#110d18;--sidebar:#17101f;--surface:#21192b;--surface-2:#2e213b;--text:#fff4e8;--muted:#baa8c7;--line:#44304f;--blue:#fa974e;--blue-hover:#ffb174;--shadow:0 22px 70px #0008}
+:root[data-theme=halloween] body{background:radial-gradient(ellipse at 95% 0%,#5c234722,transparent 40%),var(--bg)}
+:root[data-theme=halloween] .button.primary{color:#281309;font-weight:700}
+:root[data-theme=halloween] .avatar{color:#ffb174;background:#fa974e15;border-color:#fa974e55}
+:root[data-theme=halloween] .nav-item.active{background:linear-gradient(90deg,#fa974e15,#69458718)}
+:root[data-theme=halloween] .hero{border-color:#fa974e55;box-shadow:0 0 40px #ee803010}
+:root[data-theme=halloween] .auth-card{border-color:#8c557d}
+:root[data-theme=halloween] .poster-button:hover{border-color:#fa974e}
+.season-button{border-color:#8e6f9c55;background:var(--surface)}
+.season-button[aria-pressed=true]{border-color:#fa974e;background:#fa974e16}
+.season-announcement{position:relative;display:flex;align-items:center;gap:20px;padding:20px 52px 20px 24px;border-radius:12px;background:linear-gradient(115deg,#281934,#151126 65%,#352130);color:#fff2e3;border:1px solid #76578366;margin-bottom:22px;overflow:hidden}
+.season-announcement:after{content:'';position:absolute;inset:-65px 5% auto auto;width:250px;height:180px;border-radius:50%;background:#ac622511;pointer-events:none;box-shadow:0 0 60px #fca15412}
+.season-ghost{height:55px;width:55px;object-fit:contain;flex-shrink:0}
+.season-message{flex:1;min-width:0}
+.season-message>span{font-size:9px;letter-spacing:2px;font-weight:600;color:#e6a167}
+.season-message h2{font-size:19px;letter-spacing:-.5px;margin:4px 0}
+.season-message p{color:#c6b6cf;font-size:12px}
+.season-actions{display:flex;flex-direction:column;align-items:center;gap:8px;z-index:1}
+.season-cta{color:#291607;background:#f5a765;padding:9px 16px;font-size:12px;border:1px solid #ffb379}
+.season-cta:hover{background:#ffbb86}
+.season-link{font-size:11px;display:flex;gap:6px;align-items:center;color:#cfbfd7;background:none}
+.season-link svg{height:13px;width:13px}
+.season-dismiss{position:absolute;top:10px;right:10px;height:25px;width:25px;padding:0;background:none;color:#b49bbd;display:grid;place-items:center;z-index:2}
+.season-dismiss svg{width:16px;height:16px}
+.halloween-dialog{width:min(730px,92vw);background:#191122;color:#fff3e6;border:1px solid #856188;display:grid;grid-template-columns:43% 57%;overflow:hidden}
+.halloween-dialog:not([open]){display:none}
+.halloween-dialog-art{position:relative;min-height:405px;overflow:hidden;background:radial-gradient(circle at 54% 32%,#68434f,#21152c 55%,#120d1a)}
+.halloween-dialog-art:after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#191122,transparent 45%)}
+.halloween-moon{position:absolute;top:65px;left:calc(50% - 65px);width:130px;height:130px;border-radius:50%;background:#fbd2a8;box-shadow:0 0 65px #fa974e3b;opacity:.3}
+.halloween-jason{position:absolute;bottom:18px;width:95%;left:2.5%;filter:invert(1);opacity:.9}
+.halloween-ghost{position:absolute;top:33px;right:20px;transform:rotate(14deg);width:45px}
+.halloween-dialog-body{padding:53px 31px 32px 24px;z-index:1;position:relative}
+.halloween-dialog-body .eyebrow{color:#edab7b;font-size:8px;letter-spacing:1.8px}
+.halloween-dialog-body h2{font-size:31px;line-height:1.2;letter-spacing:-1px;margin:15px 0}
+.halloween-dialog-body p{color:#cdbbd7;font-size:13px;line-height:1.9;margin-bottom:25px}
+.halloween-choice{display:flex;flex-direction:column;gap:10px}
+.halloween-choice .button{font-size:12px;min-height:41px}
+.halloween-choice .primary{background:#f6a263;color:#281409}
+.halloween-choice .outline{color:#e1d1e8;border-color:#6b5176}
+.halloween-dialog-body small{display:block;color:#a992b3;font-size:10px;text-align:center;margin-top:17px}
+.hero-visitor{position:absolute;right:90px;bottom:-13px;width:195px;filter:invert(1);opacity:.11;pointer-events:none;z-index:1}
+.horror-recommendation{display:flex;align-items:center;gap:23px;padding:23px;border:1px solid #674373;border-radius:12px;background:linear-gradient(110deg,#35223a,#201728);margin-bottom:32px}
+.horror-avatar{width:100px;height:100px;flex-shrink:0;border-radius:50%;background:#ffb47212;padding:10px;border:1px solid #ffb47233}
+.horror-avatar img{width:100%;height:100%;object-fit:contain}
+.horror-copy{flex:1}
+.horror-copy .eyebrow{color:#edab7b;font-size:8px}
+.horror-copy h2{font-size:22px;margin:5px 0 6px}
+.horror-copy p{font-size:12px;color:var(--muted);max-width:540px;margin-bottom:7px}
+.horror-recommendation .outline{border-color:#99707f;color:#ffe7cf;font-size:12px}
+:root[data-theme=halloween] .detail-art:has(img[src$="jason-movie.png"]){background:radial-gradient(circle,#614461,#24182f)}
+.poster-button img[src$="jason-movie.png"],.detail-art img[src$="jason-movie.png"]{object-fit:contain;padding:12px;background:radial-gradient(circle,#614461,#24182f)}
+.genres-grid{grid-template-columns:repeat(auto-fit,minmax(115px,1fr))}
+@media(max-width:1200px){.genres-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:520px){.genres-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1100px){.season-announcement{gap:13px;padding-left:17px}.season-message h2{font-size:17px}.season-message p{font-size:11px}.season-cta{padding:9px 11px;font-size:11px}.season-ghost{height:42px;width:42px}.horror-recommendation{flex-wrap:wrap}.horror-recommendation>.button{margin-left:123px}}
+@media(max-width:600px){.season-announcement{flex-wrap:wrap;padding:18px 32px 16px 16px;gap:12px}.season-message h2{font-size:16px;line-height:1.35}.season-message p{font-size:11px}.season-message>span{font-size:8px;letter-spacing:1.6px}.season-ghost{height:36px;width:36px}.season-actions{width:100%;flex-direction:row;justify-content:flex-start;padding-left:48px;align-items:center;flex-wrap:wrap;gap:9px}.season-cta{min-height:33px;font-size:10px;padding:7px 10px}.season-link{font-size:10px}.halloween-dialog{grid-template-columns:1fr}.halloween-dialog-art{min-height:155px}.halloween-jason{width:140px;left:calc(50% - 70px);bottom:-18px}.halloween-moon{width:95px;height:95px;left:calc(50% - 47px);top:23px}.halloween-ghost{top:40px;right:60px;width:34px}.halloween-dialog-body{padding:10px 27px 29px;text-align:center}.halloween-dialog-body h2{font-size:28px}.halloween-dialog-body p{font-size:12px;margin-bottom:20px}.hero-visitor{right:15px;width:120px;opacity:.1}.horror-recommendation{gap:16px;padding:19px}.horror-avatar{width:65px;height:65px;padding:7px}.horror-copy{flex:1;min-width:160px}.horror-copy h2{font-size:19px}.horror-copy p{font-size:11px}.horror-recommendation>.button{margin-left:0;width:100%}.horror-copy .card-meta{font-size:10px}.topbar-actions{gap:6px}.season-button{width:31px;height:33px}.season-button img{width:22px;height:22px}}

@@ -1,0 +1,434 @@
+{
+  "info": {
+    "name": "Cabaña API",
+    "description": "Ejecuta login y catálogo primero. La renovación usa cookies. CRUD usa un contenido nuevo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api"
+    },
+    {
+      "key": "email",
+      "value": "admin@cabana.demo"
+    },
+    {
+      "key": "password",
+      "value": "Cabana2026!"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "content_id",
+      "value": ""
+    },
+    {
+      "key": "created_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Configuración",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{baseUrl}}/config"
+      }
+    },
+    {
+      "name": "Iniciar sesión",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{baseUrl}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Sesión iniciada\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set(\"token\", data.accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mi perfil",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/auth/me"
+      }
+    },
+    {
+      "name": "Catálogo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{baseUrl}}/catalog"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Catálogo disponible\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "if (data.length) pm.collectionVariables.set(\"content_id\", data[0].id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Buscar Dark",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{baseUrl}}/catalog?q=dark&type=SERIES"
+      }
+    },
+    {
+      "name": "Géneros",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{baseUrl}}/genres"
+      }
+    },
+    {
+      "name": "Detalle",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{baseUrl}}/catalog/{{content_id}}"
+      }
+    },
+    {
+      "name": "Mi lista",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/me/list"
+      }
+    },
+    {
+      "name": "Guardar favorito",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/me/list/{{content_id}}"
+      }
+    },
+    {
+      "name": "Quitar favorito",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/me/list/{{content_id}}"
+      }
+    },
+    {
+      "name": "Progreso",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/me/progress"
+      }
+    },
+    {
+      "name": "Guardar progreso",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/me/progress/{{content_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"seconds\": 42\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Reproducción",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/playback/{{content_id}}"
+      }
+    },
+    {
+      "name": "Catálogo administrador",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/admin/catalog"
+      }
+    },
+    {
+      "name": "Crear contenido de prueba",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/admin/catalog",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Mi película de prueba\",\n  \"description\": \"Contenido creado desde Postman.\",\n  \"type\": \"MOVIE\",\n  \"releaseYear\": 2026,\n  \"durationMinutes\": 100,\n  \"seasons\": 0,\n  \"genre\": \"Drama\",\n  \"imageUrl\": \"/assets/dark.jpg\",\n  \"videoPath\": \"\",\n  \"featured\": false,\n  \"ageRating\": \"13+\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Contenido creado\", () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set(\"created_id\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Actualizar contenido de prueba",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/admin/catalog/{{created_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Mi película actualizada\",\n  \"description\": \"Contenido creado desde Postman.\",\n  \"type\": \"MOVIE\",\n  \"releaseYear\": 2026,\n  \"durationMinutes\": 100,\n  \"seasons\": 0,\n  \"genre\": \"Drama\",\n  \"imageUrl\": \"/assets/dark.jpg\",\n  \"videoPath\": \"\",\n  \"featured\": false,\n  \"ageRating\": \"13+\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Eliminar contenido de prueba",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/admin/catalog/{{created_id}}"
+      }
+    },
+    {
+      "name": "Renovar sesión",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": "{{baseUrl}}/auth/refresh"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "if (data.accessToken) pm.collectionVariables.set(\"token\", data.accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cerrar sesión",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/auth/logout"
+      }
+    }
+  ]
+}

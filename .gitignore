@@ -1,0 +1,13 @@
+**/target/
+.env
+.env.*
+!.env.example
+*.jar
+*.zip
+*.log
+.DS_Store
+.idea/
+.vscode/
+.classpath
+.project
+.settings/
