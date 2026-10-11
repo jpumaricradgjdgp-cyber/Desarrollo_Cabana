@@ -1,7 +1,7 @@
 /* Cabaña keeps its blue identity; the fire icon opens the theme choices. */
 :root[data-theme=light]{--bg:#f3f7ff;--sidebar:#e6eeff;--surface:#fff;--surface-2:#eaf0ff;--muted:#526484;--line:#ccd9ee}
 .sidebar{isolation:isolate}
-.sidebar:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,var(--sidebar),transparent),url('./assets/cabin-blue.jpg') 68% center/cover;opacity:.38;pointer-events:none}
+.sidebar:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,var(--sidebar),transparent),url('../assets/cabin-blue.jpg') 68% center/cover;opacity:.38;pointer-events:none}
 :root[data-theme=light] .sidebar:before{opacity:.14}
 .sidebar-bottom{border-top:1px solid var(--line);padding-top:18px}
 .little-fire{display:none}
@@ -19,13 +19,29 @@
 .theme-swatch-dark{background:linear-gradient(135deg,#111b30 50%,#246cff 50%)}
 .theme-swatch-light{background:linear-gradient(135deg,#fff 50%,#175fe5 50%)}
 .theme-swatch-halloween{background:linear-gradient(135deg,#241a32 50%,#fa974e 50%)}
-.cabin-welcome{min-height:142px;display:flex;align-items:center;padding:25px 28px;margin-bottom:23px;border-radius:var(--radius);color:#f5f8ff;background:linear-gradient(90deg,#07152eea,#07152e80 50%,#07152e16),url('./assets/cabin-blue.jpg') 65% 60%/cover}
+.cabin-welcome{min-height:142px;display:flex;align-items:center;padding:25px 28px;margin-bottom:23px;border-radius:var(--radius);color:#f5f8ff;background:linear-gradient(90deg,#07152eea,#07152e80 50%,#07152e16),url('../assets/cabin-blue.jpg') 65% 60%/cover}
 .cabin-welcome h2{font-family:Georgia,serif;font-weight:400;font-size:28px;letter-spacing:-.5px}
 .cabin-welcome p{font-size:13px;color:#dbe8ff;margin-top:6px}
-:root[data-theme=halloween] .sidebar:before{background:linear-gradient(#17101fd9,#17101fe8),url('./assets/halloween-bricks.jpg') center top/340px auto repeat;opacity:1}
+:root[data-theme=halloween] .sidebar:before{background:linear-gradient(#17101fd9,#17101fe8),url('../assets/halloween-bricks.jpg') center top/340px auto repeat;opacity:1}
 :root[data-theme=halloween] .sidebar .nav-item{color:#e7dced}
 :root[data-theme=halloween] .sidebar .nav-item.active,:root[data-theme=halloween] .sidebar .nav-item:hover{background:#271c35f2}
 :root[data-theme=halloween] .sidebar .nav-label,:root[data-theme=halloween] .sidebar .nav-section,:root[data-theme=halloween] .sidebar-bottom{color:#d7c6df}
-:root[data-theme=halloween] .cabin-welcome{background:linear-gradient(90deg,#19132fea,#26163360),url('./assets/cabin-blue.jpg') 65% 60%/cover}
+:root[data-theme=halloween] .cabin-welcome{background:linear-gradient(90deg,#19132fea,#26163360),url('../assets/cabin-blue.jpg') 65% 60%/cover}
 @media(max-width:800px){.topbar{position:relative;z-index:40}.topbar-actions{position:relative}.theme-picker{position:static}.menu-button{min-width:44px;min-height:44px}.theme-picker .theme-button{padding:8px;width:44px}.theme-label{display:none}}
 @media(max-width:520px){.topbar{gap:8px}.topbar-actions,#account-actions{gap:6px}.search-wrap{min-width:0;padding:9px}.search-wrap input{font-size:12px}.season-button{min-width:36px;min-height:44px}.topbar-actions .button{min-height:44px}.cabin-welcome{min-height:164px;padding:23px 21px;background-position:65% center}.cabin-welcome h2{font-size:25px}.welcome-line{gap:12px;flex-wrap:wrap}}
+.recent-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.recent-item{display:flex;align-items:center;gap:12px;padding:15px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:var(--radius);text-align:left;min-width:0}
+.recent-item:hover{background:var(--surface-2)}
+.recent-number{font-size:24px;font-weight:800;color:var(--blue-hover)}
+.recent-item img{width:64px;height:70px;object-fit:cover;border-radius:6px}
+.recent-item strong{display:block;font-size:14px}
+.recent-item small{display:block;margin-top:6px;font-size:11px;color:var(--muted)}
+.recent-item>svg{width:18px;height:18px;flex-shrink:0;margin-left:auto}
+.poster-library{margin:8px 0 20px;padding:12px;background:var(--surface-2);border-radius:8px}
+.poster-library summary{cursor:pointer;font-weight:600}
+.poster-library p{font-size:12px;color:var(--muted);margin:10px 0}
+.poster-library-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.poster-library-grid button{padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--text);font-size:11px;text-align:left}
+.poster-library-grid img{display:block;width:100%;height:115px;object-fit:cover;border-radius:4px;margin-bottom:7px}
+@media(max-width:1100px){.recent-grid{grid-template-columns:1fr}.recent-item img{width:90px;height:58px}}
+@media(max-width:520px){.recent-releases .section-heading{align-items:flex-start;flex-direction:column;gap:8px}.recent-item{gap:9px;padding:12px}.recent-item img{width:55px}.poster-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

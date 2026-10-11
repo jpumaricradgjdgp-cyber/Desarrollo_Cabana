@@ -1,8 +1,14 @@
 # Cabaña · Servicio de streaming
 
-Proyecto inicial funcional con backend Java 21 y Spring Boot 3.5.16, frontend HTML/CSS/JavaScript y configuración para Supabase PostgreSQL, Auth y Storage. Usa el logo, las portadas y los iconos entregados. El diseño sigue la navegación lateral, el banner, el catálogo y el formulario de tu referencia, con tema oscuro y claro.
+Proyecto inicial funcional con backend Java 21 y Spring Boot 3.5.16, frontend HTML/CSS/JavaScript y configuración para Supabase PostgreSQL, Auth y Storage. Usa el logo, las portadas y los iconos entregados. El diseño sigue la navegación lateral, el banner, el catálogo y el formulario de tu referencia, con Azul noche, Claro y Halloween.
 
-## Probar ahora en Windows
+## Abrir Cabaña en Windows
+
+`Iniciar_Cabana.cmd` usa Supabase cuando existe `backend/.env`; sin ese archivo inicia la demostración. En esta laptop la configuración privada de Supabase se guarda localmente y usa el puerto **8081**. Abre [Cabaña conectada](http://localhost:8081/pages/inicio.html). Registra una cuenta real y confirma el correo antes de iniciar sesión. El administrador de demostración solo funciona en el perfil demo.
+
+`Iniciar_Supabase.cmd` exige la configuración real. Si Cabaña con Supabase ya está abierta en ese puerto, muestra su dirección en lugar de arrancar otra instancia.
+
+### Probar la demostración sin Supabase
 
 1. Descomprime `cabana-proyecto.zip` en una carpeta.
 2. Instala Java 21 si tu equipo no lo tiene.
@@ -69,11 +75,12 @@ cabana/
 │       └── test/            Pruebas de integración
 ├── frontend/
 │   ├── index.html
-│   ├── styles.css
-│   ├── app.js
-│   ├── halloween.js y halloween.css
+│   ├── css/                 Estilos base, Cabaña y Halloween
+│   ├── js/                  Aplicación, rutas, temas y vista estática
+│   │   ├── components/      Iconos compartidos
+│   │   └── data/            Biblioteca de portadas recuperadas
 │   ├── pages/               Ocho páginas HTML independientes
-│   └── assets/
+│   └── assets/              Marca, fondos, iconos y catalogo/ con portadas
 ├── supabase/                 SQL de esquema, catálogo y administrador
 ├── scripts/                 Inicio en Windows
 ├── docs/                    Arquitectura, API y adaptación de la estructura
@@ -85,6 +92,8 @@ cabana/
 
 - Catálogo de películas y series; búsqueda y filtros por tipo y género.
 - Banner con navegación entre títulos destacados y ventanas de detalles.
+- Sección «Lo más reciente», ordenada por año del catálogo real.
+- Biblioteca de siete portadas del frontend anterior, seleccionables desde el formulario de administración.
 - Selector de tres temas persistentes: Azul noche, Claro y Halloween. Se abre desde la fogata usando tus iconos a color y negro.
 - Bienvenida y menú con una cabaña entre pinos; el menú de Halloween usa tu foto de ladrillos con una capa oscura para conservar la legibilidad.
 - Modo Halloween opcional con tus iconos de Jason y fantasma, anuncio de octubre y recomendación de terror.
@@ -105,7 +114,7 @@ El frontend no necesita un proceso separado: Maven lo incorpora al backend, que 
 4. En Auth > Signing Keys usa una clave asimétrica ES256 o RS256. Esta implementación valida firma, emisor, expiración y audiencia mediante JWKS. No admite el secreto legacy HS256.
 5. En Connect copia los datos del **Session pooler, puerto 5432**. Usa la URL JDBC con `sslmode=require`. El usuario suele tener la forma `postgres.<project-ref>`; copia el valor de tu panel.
 6. Copia `backend/.env.example` a `backend/.env` y completa los valores. El archivo `.env` no se publica en Git. Spring usa variables de entorno; el script incluido carga ese archivo local.
-7. Para ejecución local usa `FRONTEND_ORIGIN=http://localhost:8080` y `SECURE_COOKIES=false`. Al publicar con HTTPS usa tu dominio y `SECURE_COOKIES=true`.
+7. Para ejecución local usa `PORT=8081`, `FRONTEND_ORIGIN=http://localhost:8081` y `SECURE_COOKIES=false`. Al publicar con HTTPS usa tu dominio y `SECURE_COOKIES=true`.
 8. Inicia desde la carpeta raíz:
 
 ```powershell
@@ -143,14 +152,14 @@ Se puede publicar en un servidor que ejecute Java o Docker. Desde la raíz:
 
 ```text
 docker build -f backend/Dockerfile -t cabana .
-docker run --env-file backend/.env -p 8080:8080 cabana
+docker run --env-file backend/.env -p 8081:8081 cabana
 ```
 
 Para producción establece el perfil `supabase`, las credenciales del backend, el dominio HTTPS en `FRONTEND_ORIGIN` y cookies seguras. El Dockerfile sirve backend y frontend juntos. El esquema SQL se ejecuta previamente, no se modifica automáticamente al arrancar. No se ha publicado el sistema en un servidor externo.
 
 ## Verificación y alcance
 
-El backend fue compilado y comprobado con pruebas de integración en el perfil demo; la interfaz también se comprobó desde un navegador en escritorio y a 390 px. Consulta `docs/VERIFICACION.md` para el detalle. No se ejecutaron los scripts contra una cuenta real de Supabase: faltan completar las claves de Auth/Storage y la configuración local.
+El backend fue compilado y comprobado con pruebas de integración en el perfil demo; la interfaz también se comprobó desde un navegador en escritorio y a 390 px. Consulta `docs/VERIFICACION.md` para el detalle. También se verificó la conexión real a PostgreSQL de Supabase: esquema `cabana`, migraciones 01/02/04, perfil `supabase` y API con 13 títulos y 9 géneros. La clave pública de Auth y sus claves de firma respondieron correctamente. El registro y el inicio de sesión con una cuenta real requieren una prueba del usuario con confirmación por correo. Los videos reales necesitan archivos y configuración de Storage.
 
 Esta primera versión es un MVP académico. Cada título tiene una sola ruta de video; la gestión de temporadas y episodios independientes queda para una ampliación. No incluye pagos, suscripciones, perfiles familiares, recuperación de contraseña, DRM ni transcodificación HLS. Antes de abrirlo a usuarios reales deben incorporarse recuperación de cuenta, límites de peticiones, observabilidad y pruebas con la infraestructura elegida. La reproducción MP4 y las URLs temporales cubren el flujo básico solicitado.
 
@@ -161,3 +170,7 @@ Esta primera versión es un MVP académico. Cada título tiene una sola ruta de 
 - [Claves JWT y JWKS de Supabase](https://supabase.com/docs/guides/auth/signing-keys).
 - [Spring Security Resource Server JWT](https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html).
 - [API de Supabase Storage para firmar rutas](https://supabase.com/docs/reference/self-hosting-storage).
+
+## Organización y recuperación del frontend anterior
+
+Se mantuvo una sola carpeta `frontend`, separando `css`, `js`, `pages` y `assets`. Consulta [la comparación y los archivos recuperados](docs/FRONTEND_RECUPERADO.md). El backend y los scripts SQL permanecen separados para que sea fácil ubicar cada parte.

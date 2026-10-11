@@ -23,14 +23,14 @@ La carpeta `frontend/pages` contiene ocho entradas independientes:
 | mi-lista.html | Lista personal |
 | panel-control.html | Administración del catálogo |
 
-Cada archivo tiene su título, descripción y atributo `data-page`. Los formularios de login y registro están definidos en los HTML correspondientes, dentro de `template#auth-layout`, y se conectan a la API mediante JavaScript. Las páginas comparten `styles.css`, `halloween.css`, `app.js`, `halloween.js` y las imágenes. Los catálogos se construyen con datos dinámicos de la API. La navegación utiliza rutas de archivos HTML, por ejemplo `/pages/peliculas.html`. `index.html` se mantiene como entrada principal. Las páginas deben abrirse desde el servidor Java, no mediante doble clic en un HTML, porque necesitan la API.
+Cada archivo tiene su título, descripción y atributo `data-page`. Los formularios de login y registro están definidos en los HTML correspondientes, dentro de `template#auth-layout`, y se conectan a la API mediante JavaScript. Las páginas comparten `css/styles.css`, `css/halloween.css`, `js/app.js`, `js/halloween.js` y las imágenes. Los catálogos se construyen con datos dinámicos de la API. La navegación utiliza rutas de archivos HTML, por ejemplo `/pages/peliculas.html`. `index.html` se mantiene como entrada principal. Las páginas deben abrirse desde el servidor Java, no mediante doble clic en un HTML, porque necesitan la API.
 
 ## Configuración de tu backend anterior
 
 Se copiaron a `backend/.env.example` el host JDBC y el usuario de PostgreSQL que proporcionaste. La URL de Auth se obtuvo del identificador de proyecto incluido en ese usuario; compruébala en el panel de tu proyecto. La contraseña compartida no se guardó en el código, en el ejecutable ni en el ZIP.
 
-Para usar el perfil real faltan la contraseña vigente en `SUPABASE_DB_PASSWORD`, `SUPABASE_PUBLISHABLE_KEY` para Auth y `SUPABASE_SERVICE_ROLE_KEY` para firmar los videos. La clave de Storage puede quedar vacía mientras no se use reproducción real; la configuración de Auth es necesaria para iniciar el perfil supabase.
+La configuración local de PostgreSQL y Auth quedó completada en `backend/.env`, excluido de Git y del ZIP. Se comprobó el perfil real y se ejecutaron los scripts 01, 02 y 04 en el esquema privado `cabana`: la API devuelve 13 títulos y 9 géneros. La clave pública de Auth funciona; el proyecto exige confirmar el correo al registrarse.
 
-Tu configuración anterior usaba `ddl-auto=update`. Esta entrega conserva `validate` en el esquema privado `cabana`, creado mediante los scripts SQL, para que iniciar Cabaña no altere las tablas de tu backend anterior. El perfil demo usa su propia base temporal H2. No se ejecutaron consultas o migraciones contra tu proyecto real de Supabase.
+El perfil real conserva `ddl-auto=validate`, para que arrancar Cabaña no modifique las tablas del backend anterior. El perfil demo usa una base temporal H2. La clave de Storage puede permanecer vacía hasta configurar los videos: reproducir archivos reales requiere subirlos al bucket privado y completar la configuración exclusiva del backend.
 
-Antes de publicar, sustituye la contraseña que apareció en esta conversación. Completa un archivo local `backend/.env`, que se excluye de Git y del ZIP, y ejecuta `scripts/iniciar-supabase.ps1`. Consulta README para el procedimiento completo.
+Usa `Iniciar_Supabase.cmd` o `Iniciar_Cabana.cmd` con el `.env` local. La clave pública no sustituye a la contraseña PostgreSQL y el administrador demo no es una cuenta de Supabase.

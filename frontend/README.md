@@ -1,13 +1,24 @@
 # Frontend Cabaña
 
-Interfaz en HTML, CSS y JavaScript sin dependencias de compilación. `pages/` contiene archivos HTML separados para inicio, películas, series, géneros, login, registro, mi lista y panel de control. Comparten estilos y JavaScript para obtener los datos del backend; Angular aparece solo en el documento de ejemplo y no fue un requisito de tu solicitud.
+HTML, CSS y JavaScript sin un proceso adicional de compilación.
 
-Spring Boot sirve estos archivos desde la raíz del sitio. El proceso de Maven copia frontend/ a los recursos estáticos del backend. Después de modificar el diseño, reinicia `mvnw spring-boot:run` o reconstruye el JAR.
+```text
+frontend/
+├── index.html
+├── pages/             Inicio, películas, series, géneros, login, registro, mi lista y panel
+├── css/               styles.css, cabana.css y halloween.css
+├── js/                app.js, bootstrap.js, paths.js, themes.js y halloween.js
+│   ├── components/    Iconos reutilizables
+│   └── data/          Biblioteca de portadas
+└── assets/            Logo, iconos, fondos y catalogo/ con siete portadas recuperadas
+```
 
-El CSS y las imágenes usan rutas relativas: `./styles.css` desde `index.html` y `../styles.css` desde `pages/`. Al abrir un HTML con doble clic se muestra el diseño y una guía para iniciar Java; login y registro permiten ver sus formularios, pero no enviarlos. Para usar el catálogo, la sesión y el CRUD, ejecuta `Iniciar_Cabana.cmd` y abre `http://localhost:8080/pages/inicio.html`. `bootstrap.js` también reconoce una vista local en Live Server (puertos 5500–5599 o carpeta `/frontend/`) y muestra la guía sin intentar consultar su API inexistente. Fuera de esas vistas estáticas carga la aplicación completa por HTTP.
+Spring Boot sirve el frontend y la API juntos. Maven copia esta carpeta al ejecutable. Tras editar los archivos, reinicia `mvnw.cmd spring-boot:run` o recompila el JAR; el ejecutable anterior no cambia por editar un HTML.
 
-Si la consola muestra `:5500/api/config 404`, estás abriendo la aplicación en el servidor de archivos de VS Code. Abre `localhost:8080` después de ejecutar Java. El aviso `com.chrome.devtools.json` pertenece a la conexión de carpetas de Chrome DevTools; el aviso del WebSocket con Back-Forward Cache pertenece a la recarga de Live Server. No se resuelven desactivando la seguridad del navegador ni añadiendo claves de Supabase al HTML.
+Desde `pages/`, los estilos se enlazan con `../css/` y los scripts con `../js/`. `js/paths.js` resuelve imágenes y páginas desde la raíz del frontend. `js/bootstrap.js` carga la aplicación al servirla con Java; con doble clic o Live Server muestra una guía y los formularios deshabilitados. Esas vistas estáticas no pueden iniciar sesión ni ejecutar el CRUD. La guía propone localhost:8081; si elegiste otro puerto usa la dirección que imprime el lanzador.
 
-Pantallas: inicio, películas, series, géneros, lista personal, registro, inicio de sesión y panel de control. Detalles y reproducción usan cuadros accesibles. Hay diseño adaptable para celular y teclado, búsqueda, filtros y tres temas persistentes en localStorage: **Azul noche**, **Claro** y **Halloween**. La fogata abre el selector; cada opción aplica su tema directamente. Funciona también en la vista estática y se conserva al cambiar de página. Escape o un clic fuera cierran el selector. La sesión de acceso queda en memoria; la cookie de renovación es HttpOnly. El anuncio de octubre es opcional; nunca cambia el tema sin que lo elijas.
+La fogata abre Azul noche, Claro y Halloween; la preferencia persiste al navegar. Halloween conserva tu imagen de ladrillos en el menú. La búsqueda, los filtros, los detalles y «Lo más reciente» usan datos de la API. Esta última sección ordena por año de estreno; no representa popularidad ni visitas.
 
-Los archivos `fire.png` y `bonfire.png` son los iconos que enviaste. El selector muestra la fogata a color en Azul noche y Halloween, y el fuego negro en Claro. El diseño conserva los acentos azules. `assets/cabin-blue.jpg` es una foto generada de una cabaña entre pinos al anochecer, incorporada al menú lateral y a la bienvenida. En Halloween, el fondo del menú cambia a `assets/halloween-bricks.jpg`, tu imagen de ladrillos, con una capa oscura para mantener legible la navegación. `themes.js` controla las preferencias y `cabana.css` contiene estos estilos. Las tres portadas y el logo son tus archivos originales. Los demás títulos usan tarjetas tipográficas hasta que añadas sus imágenes desde el panel.
+El panel ADMIN permite crear, consultar, editar y eliminar contenidos. Su formulario incorpora una biblioteca de siete portadas recuperadas del proyecto anterior: seleccionar una rellena la ruta de imagen y guardar aplica el cambio. No agrega películas ni videos automáticamente. El catálogo usa los mismos permisos y autenticación de Supabase que el resto de la aplicación. El token de acceso se mantiene en memoria y la renovación en una cookie HttpOnly.
+
+Los avisos de Chrome DevTools y del WebSocket de Live Server pertenecen a esas herramientas. No hace falta desactivar la seguridad ni poner claves privadas en el HTML.

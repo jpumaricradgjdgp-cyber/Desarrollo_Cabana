@@ -1,5 +1,5 @@
 (() => {
-  const base = new URL('.', document.currentScript.src);
+  const base = new URL('../', document.currentScript.src);
   const root = document.documentElement;
   const choices = [
     {value:'dark', label:'Azul noche'},

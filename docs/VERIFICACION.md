@@ -37,4 +37,14 @@ Tras actualizar las rutas dinámicas de imágenes y navegación, también se rep
 
 ## Pendiente de comprobación con datos del usuario
 
-Conexión JDBC a PostgreSQL de Supabase; ejecución del SQL en el proyecto real; registro y correo de confirmación real; emisión de JWT por esa cuenta; permisos y reproducción desde el bucket del usuario; despliegue con HTTPS; prueba Docker. Ninguna de estas pruebas se presenta como realizada.
+Registro y correo de confirmación real; emisión de JWT por esa cuenta; permisos y reproducción desde el bucket del usuario; despliegue con HTTPS; prueba Docker. Ninguna de estas pruebas se presenta como realizada.
+
+## Conexión real a Supabase
+
+Se comprobó JDBC contra PostgreSQL 17.6, se creó el esquema `cabana` y se ejecutaron 01_schema.sql, 02_catalog.sql y 04_halloween.sql. El backend inició con el perfil `supabase`, validó las entidades JPA y respondió `/api/config` con `demo: false`, `/api/catalog` con 13 títulos y `/api/genres` con 9 géneros. La clave pública permitió consultar la configuración de Auth: email habilitado y confirmación requerida. El endpoint JWKS devolvió una clave ES256. Estas comprobaciones no crearon usuarios ni enviaron correos; registro, confirmación, login real y reproducción privada siguen pendientes de una cuenta y archivos del usuario.
+
+## Frontend organizado y portadas recuperadas
+
+La compilación limpia final completó las diez pruebas del backend. Se comprobó la nueva estructura css/js/pages/assets desde Java, nueve HTML con doble clic y ocho vistas simuladas de Live Server: cero errores JavaScript y recursos 404. Los tres temas conservaron sus imágenes y preferencias entre páginas, con anchos de 320 a 1366 px sin desbordamiento horizontal. «Lo más reciente» presentó los tres títulos esperados según el año de la API real y abrió sus detalles. Las siete portadas servidas coinciden con los archivos originales por SHA256.
+
+El formulario ADMIN se probó en demo: carga de siete imágenes, selección de portada, creación, edición persistida y eliminación del registro de prueba. No se usó el administrador demo contra la base real. El lanzador Supabase detectó la instancia abierta y terminó correctamente sin iniciar otra en el mismo puerto.
