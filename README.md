@@ -85,7 +85,8 @@ cabana/
 
 - Catálogo de películas y series; búsqueda y filtros por tipo y género.
 - Banner con navegación entre títulos destacados y ventanas de detalles.
-- Modo oscuro/claro persistente, usando la fogata a color y el fuego negro que enviaste.
+- Selector de tres temas persistentes: Azul noche, Claro y Halloween. Se abre desde la fogata usando tus iconos a color y negro.
+- Bienvenida y menú con una cabaña entre pinos; el menú de Halloween usa tu foto de ladrillos con una capa oscura para conservar la legibilidad.
 - Modo Halloween opcional con tus iconos de Jason y fantasma, anuncio de octubre y recomendación de terror.
 - Registro, inicio de sesión, renovación mediante cookie HttpOnly y cierre de sesión.
 - Lista personal y progreso de reproducción por usuario.

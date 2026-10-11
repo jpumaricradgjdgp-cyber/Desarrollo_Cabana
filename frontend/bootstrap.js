@@ -31,19 +31,6 @@
     main.querySelector('button[type="submit"]').disabled = true;
     main.querySelector('#auth-error').textContent = 'Inicia Java y abre localhost:8080 para acceder a tu cuenta.';
   }
-  const theme = document.querySelector('#theme-toggle');
-  function syncTheme() {
-    const dark = document.documentElement.dataset.theme !== 'light';
-    document.querySelector('#theme-icon').src = new URL(`assets/${dark ? 'bonfire' : 'fire'}.png`, base).href;
-    theme.setAttribute('aria-label', `Cambiar a modo ${dark ? 'claro' : 'oscuro'}`);
-  }
-  theme.addEventListener('click', () => {
-    const value = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
-    document.documentElement.dataset.theme = value;
-    try { localStorage.setItem('cabana-theme', value); } catch {}
-    syncTheme();
-  });
-  syncTheme();
   document.querySelector('#search').disabled = true;
   const season = document.querySelector('#halloween-toggle');
   season.disabled = true;

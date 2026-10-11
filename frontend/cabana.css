@@ -1,0 +1,31 @@
+/* Cabaña keeps its blue identity; the fire icon opens the theme choices. */
+:root[data-theme=light]{--bg:#f3f7ff;--sidebar:#e6eeff;--surface:#fff;--surface-2:#eaf0ff;--muted:#526484;--line:#ccd9ee}
+.sidebar{isolation:isolate}
+.sidebar:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,var(--sidebar),transparent),url('./assets/cabin-blue.jpg') 68% center/cover;opacity:.38;pointer-events:none}
+:root[data-theme=light] .sidebar:before{opacity:.14}
+.sidebar-bottom{border-top:1px solid var(--line);padding-top:18px}
+.little-fire{display:none}
+.theme-picker{position:relative;z-index:45}
+.theme-picker .theme-button{width:auto;min-width:44px;height:44px;display:flex;gap:8px;align-items:center;justify-content:center;padding:8px 11px;border-radius:24px}
+.theme-label{font-size:12px;font-weight:600}
+.theme-options{position:absolute;top:calc(100% + 10px);right:0;width:230px;max-width:calc(100vw - 30px);padding:15px;background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow)}
+.theme-options[hidden]{display:none}
+.theme-options-title{font-weight:700;font-size:13px;margin-bottom:9px}
+.theme-options button{display:flex;align-items:center;gap:11px;width:100%;min-height:46px;padding:9px;border-radius:8px;background:transparent;text-align:left;font-size:13px;color:var(--text)}
+.theme-options button:hover{background:var(--surface-2)}
+.theme-options button[aria-pressed=true]{background:var(--surface-2)}
+.theme-options button[aria-pressed=true]:after{content:'✓';margin-left:auto;color:var(--blue-hover);font-weight:700}
+.theme-swatch{width:27px;height:27px;flex-shrink:0;border:1px solid #8da4c34d;border-radius:8px}
+.theme-swatch-dark{background:linear-gradient(135deg,#111b30 50%,#246cff 50%)}
+.theme-swatch-light{background:linear-gradient(135deg,#fff 50%,#175fe5 50%)}
+.theme-swatch-halloween{background:linear-gradient(135deg,#241a32 50%,#fa974e 50%)}
+.cabin-welcome{min-height:142px;display:flex;align-items:center;padding:25px 28px;margin-bottom:23px;border-radius:var(--radius);color:#f5f8ff;background:linear-gradient(90deg,#07152eea,#07152e80 50%,#07152e16),url('./assets/cabin-blue.jpg') 65% 60%/cover}
+.cabin-welcome h2{font-family:Georgia,serif;font-weight:400;font-size:28px;letter-spacing:-.5px}
+.cabin-welcome p{font-size:13px;color:#dbe8ff;margin-top:6px}
+:root[data-theme=halloween] .sidebar:before{background:linear-gradient(#17101fd9,#17101fe8),url('./assets/halloween-bricks.jpg') center top/340px auto repeat;opacity:1}
+:root[data-theme=halloween] .sidebar .nav-item{color:#e7dced}
+:root[data-theme=halloween] .sidebar .nav-item.active,:root[data-theme=halloween] .sidebar .nav-item:hover{background:#271c35f2}
+:root[data-theme=halloween] .sidebar .nav-label,:root[data-theme=halloween] .sidebar .nav-section,:root[data-theme=halloween] .sidebar-bottom{color:#d7c6df}
+:root[data-theme=halloween] .cabin-welcome{background:linear-gradient(90deg,#19132fea,#26163360),url('./assets/cabin-blue.jpg') 65% 60%/cover}
+@media(max-width:800px){.topbar{position:relative;z-index:40}.topbar-actions{position:relative}.theme-picker{position:static}.menu-button{min-width:44px;min-height:44px}.theme-picker .theme-button{padding:8px;width:44px}.theme-label{display:none}}
+@media(max-width:520px){.topbar{gap:8px}.topbar-actions,#account-actions{gap:6px}.search-wrap{min-width:0;padding:9px}.search-wrap input{font-size:12px}.season-button{min-width:36px;min-height:44px}.topbar-actions .button{min-height:44px}.cabin-welcome{min-height:164px;padding:23px 21px;background-position:65% center}.cabin-welcome h2{font-size:25px}.welcome-line{gap:12px;flex-wrap:wrap}}

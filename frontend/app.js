@@ -58,13 +58,10 @@ function renderNavigation() {
   linkPages();
 }
 function syncTheme() {
-  const dark=document.documentElement.dataset.theme!=='light';
-  $('#theme-icon').src=assetUrl(dark?'bonfire.png':'fire.png');
-  $('#theme-toggle').setAttribute('aria-label',`Cambiar a modo ${dark?'claro':'oscuro'}`);
-  $('#theme-toggle').title=`Cambiar a modo ${dark?'claro':'oscuro'}`;
+  window.CabanaTheme.sync();
   syncSeasonToggle();
 }
-function applyTheme(theme){document.documentElement.dataset.theme=theme;try{localStorage.setItem('cabana-theme',theme);}catch{}syncTheme();if(state.loaded)render();}
+function applyTheme(theme){window.CabanaTheme.set(theme);}
 function saved(id){return state.list.some(c=>c.id===id);}
 function featuredItems(){return state.catalog.filter(c=>c.featured).sort((a,b)=>a.releaseYear-b.releaseYear);}
 function meta(c){return `${c.releaseYear} · ${esc(c.genre)}${c.type==='SERIES'?` · ${c.seasons} ${c.seasons===1?'temporada':'temporadas'}`:` · ${c.durationMinutes} min`}`;}
@@ -83,7 +80,7 @@ function hero(){
 }
 function home(){
   const continuing=state.progress.filter(p=>p.seconds>0).map(p=>p.content);
-  return `<div class="welcome-line"><strong>${state.user?`Qué bueno verte, ${esc(state.user.name.split(' ')[0])}.`:'Bienvenido a tu próximo lugar favorito.'}</strong>${state.demo?'<span class="demo-tag">VISTA DE DEMOSTRACIÓN</span>':''}</div>${seasonalAnnouncement()}${hero()}${halloweenRecommendation()}${continuing.length?section('Seguir viendo','play',continuing,'list'):''}${section('Películas','movie',state.catalog.filter(c=>c.type==='MOVIE'),'movies')}${section('Series','series',state.catalog.filter(c=>c.type==='SERIES'),'series')}<section class="section"><div class="section-heading"><h2>${svg('genres')}Géneros</h2><a class="see-all" href="#genres">Explorar ${svg('right')}</a></div><div class="genres-grid">${genreTiles()}</div></section>`;
+  return `<div class="welcome-line"><strong>${state.user?`Qué bueno verte, ${esc(state.user.name.split(' ')[0])}.`:'Bienvenido a tu próximo lugar favorito.'}</strong>${state.demo?'<span class="demo-tag">VISTA DE DEMOSTRACIÓN</span>':''}</div><section class="cabin-welcome" aria-label="Bienvenido a Cabaña"><div><h2>Quédate una historia más.</h2><p>Tu refugio para desconectar.</p></div></section>${seasonalAnnouncement()}${hero()}${halloweenRecommendation()}${continuing.length?section('Seguir viendo','play',continuing,'list'):''}${section('Películas','movie',state.catalog.filter(c=>c.type==='MOVIE'),'movies')}${section('Series','series',state.catalog.filter(c=>c.type==='SERIES'),'series')}<section class="section"><div class="section-heading"><h2>${svg('genres')}Géneros</h2><a class="see-all" href="#genres">Explorar ${svg('right')}</a></div><div class="genres-grid">${genreTiles()}</div></section>`;
 }
 function empty(title,message,link='home',label='Explorar catálogo'){return `<div class="empty-state">${svg('search')}<h2>${title}</h2><p>${message}</p><a href="#${link}" class="button primary">${label}</a></div>`;}
 function browse(r){
@@ -174,7 +171,7 @@ document.addEventListener('submit',async event=>{
 });
 $('#search-icon').innerHTML=svg('search');$('#menu-toggle').innerHTML=svg('menu');
 $('#menu-toggle').addEventListener('click',()=>{const open=$('#sidebar').classList.toggle('open');$('#menu-toggle').setAttribute('aria-expanded',String(open));});
-$('#theme-toggle').addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
+document.addEventListener('cabana:theme-change',()=>{syncTheme();if(state.loaded)render();});
 $('#search').addEventListener('input',event=>{state.query=event.target.value;render();});
 document.addEventListener('keydown',event=>{if(event.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){event.preventDefault();$('#search').focus();}});
 window.addEventListener('hashchange',()=>{state.query='';state.genre=state.pendingGenre||'';state.pendingGenre=null;$('#search').value='';window.scrollTo(0,0);render();});
