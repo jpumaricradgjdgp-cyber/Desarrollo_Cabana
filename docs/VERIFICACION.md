@@ -2,6 +2,10 @@
 
 Fecha: 11 de octubre de 2026. Entorno: Windows, Java 21, Spring Boot 3.5.16 y navegador Chrome.
 
+## Estado actual del Avance 2
+
+La suite actual contiene 13 pruebas: 9 de CabanaIntegrationTest y 4 de SupabaseContractTest, sin fallos, errores u omisiones. Los conteos de diez pruebas en apartados posteriores documentan etapas anteriores. El detalle vigente y los límites de la evidencia están en AVANCE2.md. La foto AVIF con extensión JPG se convirtió desde el navegador y se guardó/editó en demo; Java mantiene validación real JPEG/PNG. Catálogo conectado: 13 títulos y 9 géneros; panel anónimo: 401. Login final real, MP4 propio y despliegue siguen pendientes.
+
 ## Backend
 
 Diez pruebas de integración completadas sin fallos ni errores:
