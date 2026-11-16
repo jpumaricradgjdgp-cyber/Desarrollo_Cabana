@@ -48,7 +48,9 @@ import { Icon } from '../shared/icon';
                   <strong>{{ user.name }}</strong><small>{{ user.email }}</small>
                   <span class="badge">{{ user.role === 'ADMIN' ? 'Administrador' : 'Usuario' }}</span>
                 </div>
+                <a class="option" routerLink="/perfil" (click)="userOpen.set(false)"><app-icon name="user" [size]="18" />Mi perfil</a>
                 <a class="option" routerLink="/mi-lista" (click)="userOpen.set(false)"><app-icon name="bookmark" [size]="18" />Mi lista</a>
+                <a class="option" routerLink="/historial" (click)="userOpen.set(false)"><app-icon name="clock" [size]="18" />Historial</a>
                 @if (auth.isAdmin()) {
                   <a class="option" routerLink="/admin" (click)="userOpen.set(false)"><app-icon name="shield" [size]="18" />Panel ADMIN</a>
                 }

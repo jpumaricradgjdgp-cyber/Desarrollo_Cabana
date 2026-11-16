@@ -19,6 +19,16 @@ public class AuthController {
   @PostMapping("/refresh") ResponseEntity<?> refresh(@CookieValue(value="cabana_refresh",required=false) String cookie,@RequestHeader(value="Origin",required=false) String o){checkOrigin(o);return response(auth.refresh(cookie));}
   @PostMapping("/logout") ResponseEntity<?> logout(@RequestHeader(value="Authorization",required=false) String bearer,@RequestHeader(value="Origin",required=false) String o){checkOrigin(o);auth.logout(bearer);return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,cookie("",0)).body(Map.of("message","Sesión cerrada"));}
   @GetMapping("/me") Profile me(@AuthenticationPrincipal Jwt jwt){return auth.profile(jwt);}
+  /** Envía el correo de recuperación; el enlace vuelve a /restablecer del mismo sitio. */
+  @PostMapping("/forgot") Map<String,String> forgot(@Valid @RequestBody ForgotInput body,@RequestHeader(value="Origin",required=false) String o){
+    checkOrigin(o);
+    String site=o!=null?o:origin.split(",")[0].strip();
+    return Map.of("message",auth.forgot(body.email().strip().toLowerCase(Locale.ROOT),site+"/restablecer"));
+  }
+  /** Fija la nueva contraseña usando el token que llega en el enlace de recuperación. */
+  @PostMapping("/reset") Map<String,String> reset(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody ResetInput body,@RequestHeader(value="Origin",required=false) String o){
+    checkOrigin(o);auth.reset(jwt,body.password());return Map.of("message","Tu contraseña se actualizó. Ya puedes iniciar sesión.");
+  }
   private ResponseEntity<?> response(AuthService.Session s){
     var body=new LinkedHashMap<String,Object>();body.put("accessToken",s.accessToken());body.put("expiresIn",s.expiresIn());body.put("message",s.message());
     var response=ResponseEntity.ok().header(HttpHeaders.CACHE_CONTROL,"no-store");

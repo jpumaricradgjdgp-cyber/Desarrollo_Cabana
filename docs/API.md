@@ -31,6 +31,20 @@ Base local: `http://localhost:8080/api`. Documentación interactiva con Swagger 
 | GET | /admin/reviews | ADMIN | Todas las reseñas para moderación |
 | DELETE | /admin/reviews/{id} | ADMIN | Eliminar una reseña |
 | GET | /admin/stats | ADMIN | Indicadores del panel: totales, títulos por género y mejor calificados |
+| POST | /auth/forgot | Público | Envía el correo de recuperación (`{email}`); el enlace vuelve a `/restablecer` |
+| POST | /auth/reset | Token del enlace | Nueva contraseña (`{password}`) con el token de recuperación |
+| PATCH | /me/profile | USER/ADMIN | Cambiar mi nombre (`{name}`) |
+| PUT | /me/password | USER/ADMIN | Cambiar contraseña (`{currentPassword,newPassword}`) |
+| GET | /me/stats | USER/ADMIN | Totales: guardados, vistos y reseñas |
+| GET | /me/reviews | USER/ADMIN | Mis reseñas |
+| DELETE | /me/progress/{id} | USER/ADMIN | Quitar un título del historial |
+| GET | /me/recommendations | USER/ADMIN | Recomendaciones por géneros favoritos, con motivo |
+| GET | /catalog/{id}/episodes | Público | Temporadas y capítulos de una serie |
+| POST | /admin/catalog/{id}/episodes | ADMIN | Agregar capítulo `{season,number,title,description,durationMinutes}` |
+| PUT | /admin/episodes/{id} | ADMIN | Editar capítulo |
+| DELETE | /admin/episodes/{id} | ADMIN | Eliminar capítulo |
+| GET | /admin/users | ADMIN | Usuarios con su actividad |
+| PUT | /admin/users/{id}/role | ADMIN | Cambiar rol `{role: USER\|ADMIN}`; no se permite cambiar el propio |
 
 ## Inicio de sesión
 
@@ -38,7 +52,7 @@ Base local: `http://localhost:8080/api`. Documentación interactiva con Swagger 
 {"email":"admin@cabana.demo","password":"Cabana2026!"}
 ```
 
-Respuesta: `accessToken`, `expiresIn` y `message`. La renovación se devuelve mediante `Set-Cookie`, no en el JSON. El navegador usa la cookie HttpOnly y mantiene el token de acceso en memoria. Postman conserva las cookies automáticamente. El registro de Supabase puede devolver `accessToken: null` cuando exige confirmar el correo.
+Respuesta: `accessToken`, `expiresIn` y `message`. Los errores de Supabase Auth se traducen a mensajes claros: «Confirma tu correo antes de iniciar sesión» (403), «Correo o contraseña incorrectos.» (401), correo ya registrado (409), contraseña débil (400) y demasiados intentos (429). La renovación se devuelve mediante `Set-Cookie`, no en el JSON. El navegador usa la cookie HttpOnly y mantiene el token de acceso en memoria. Postman conserva las cookies automáticamente. El registro de Supabase puede devolver `accessToken: null` cuando exige confirmar el correo.
 
 ## Crear o actualizar contenido
 
@@ -54,7 +68,8 @@ Respuesta: `accessToken`, `expiresIn` y `message`. La renovación se devuelve me
   "imageUrl":"/assets/dark.jpg",
   "videoPath":"peliculas/mi-video.mp4",
   "featured":false,
-  "ageRating":"13+"
+  "ageRating":"13+",
+  "trailerUrl":"https://www.youtube.com/watch?v=XXXXXXXXXXX"
 }
 ```
 
@@ -87,3 +102,11 @@ El frontend también permite WebP y AVIF, incluso descargados con extensión JPG
 ```
 
 Cada usuario tiene una reseña por contenido (restricción única `user_id, content_id`): un segundo `PUT` la actualiza. `rating` debe estar entre 1 y 5 y `comment` admite hasta 500 caracteres. En Supabase ejecuta antes `supabase/07_resenas.sql`.
+
+## Historial y recomendaciones
+
+`GET /me/progress` devuelve el historial ordenado por `updatedAt` (lo último visto primero). `GET /me/recommendations` calcula el gusto por género con consultas JPQL agregadas: +2 por título guardado, +1 por título visto y +3/−3 por reseña buena (4–5) o mala (1–2). Excluye lo que ya guardaste, viste o calificaste y desempata con el promedio de estrellas. Cada resultado trae `reason`, por ejemplo «Porque te gusta Terror».
+
+## Tráileres
+
+`trailerUrl` es opcional y solo acepta enlaces HTTPS de YouTube (`youtube.com/watch?v=`, `youtu.be/` o `youtube.com/embed/`). El frontend lo muestra con `youtube-nocookie.com`. En Supabase ejecuta antes `supabase/09_episodios_trailers_historial.sql`.

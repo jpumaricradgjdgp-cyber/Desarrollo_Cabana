@@ -44,3 +44,11 @@ h1 { font-size: clamp(32px, 4.4vw, 54px); font-weight: 800; line-height: 1.05; m
   .reviews-grid { grid-template-columns: 1fr; }
   .summary { position: static; }
 }
+
+.seasons { display: flex; flex-wrap: wrap; gap: 6px; }
+.episode { display: flex; align-items: center; gap: 16px; padding: 14px 18px; margin-bottom: 10px; transition: border-color .15s; }
+.episode:hover { border-color: var(--accent); }
+.ep-num { font-family: var(--display); font-size: 24px; font-weight: 800; color: var(--muted); min-width: 30px; text-align: center; }
+.ep-body { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.ep-body p { color: var(--muted); font-size: 13px; }
+.ep-len { color: var(--muted); white-space: nowrap; }

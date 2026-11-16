@@ -6,9 +6,9 @@ import { ApiService, errorMessage } from '../../core/api.service';
 import { CatalogService } from '../../core/catalog.service';
 import { lengthLabel } from '../../core/format';
 import { LibraryService } from '../../core/library.service';
-import { AGE_RATINGS, AdminContent, AgeRating, ContentInput, ContentType, PLACEHOLDER, POSTER_LIBRARY } from '../../core/models';
+import { AGE_RATINGS, AdminContent, AgeRating, ContentInput, ContentType, Episode, PLACEHOLDER, POSTER_LIBRARY } from '../../core/models';
 import { ConfirmService, ToastService } from '../../core/toast.service';
-import { fieldError, imageUrl, videoPath } from '../../core/validators';
+import { fieldError, imageUrl, videoPath, youtubeUrl } from '../../core/validators';
 import { Icon } from '../../shared/icon';
 import { Poster } from '../../shared/poster';
 import { RatingStars } from '../../shared/rating-stars';
@@ -78,6 +78,20 @@ export class ContentsPage {
     videoPath: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(1000), videoPath] }),
     featured: new FormControl(false, { nonNullable: true }),
     ageRating: new FormControl<AgeRating>('13+', { nonNullable: true }),
+    trailerUrl: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(300), youtubeUrl] }),
+  });
+
+  // ----- Episodios -----
+  protected readonly episodesFor = signal<AdminContent | null>(null);
+  protected readonly episodeList = signal<Episode[]>([]);
+  protected readonly editingEpisode = signal<Episode | null>(null);
+  protected readonly savingEpisode = signal(false);
+  protected readonly episodeForm = new FormGroup({
+    season: new FormControl(1, { nonNullable: true, validators: [Validators.required, Validators.min(1), Validators.max(100)] }),
+    number: new FormControl(1, { nonNullable: true, validators: [Validators.required, Validators.min(1), Validators.max(500)] }),
+    title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(150)] }),
+    description: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(1000)] }),
+    durationMinutes: new FormControl(45, { nonNullable: true, validators: [Validators.required, Validators.min(1), Validators.max(600)] }),
   });
 
   constructor() {
@@ -112,7 +126,7 @@ export class ContentsPage {
       this.form.reset();
       this.form.controls.genre.setValue(this.genres()[0] ?? '');
     } else {
-      this.form.reset({ ...item, videoPath: item.videoPath ?? '' });
+      this.form.reset({ ...item, videoPath: item.videoPath ?? '', trailerUrl: item.trailerUrl ?? '' });
     }
     this.editing.set(item);
   }
@@ -130,7 +144,7 @@ export class ContentsPage {
     this.saving.set(true);
     this.formError.set(null);
     const raw = this.form.getRawValue();
-    const input: ContentInput = { ...raw, title: raw.title.trim(), videoPath: raw.videoPath.trim() || null };
+    const input: ContentInput = { ...raw, title: raw.title.trim(), videoPath: raw.videoPath.trim() || null, trailerUrl: raw.trailerUrl.trim() || null };
     const current = this.editing();
     try {
       if (current === 'new') await firstValueFrom(this.api.createContent(input));
@@ -171,6 +185,69 @@ export class ContentsPage {
       this.catalog.reload();
     } catch (e) {
       this.toast.show(errorMessage(e), 'error');
+    }
+  }
+
+  protected epErr(name: keyof typeof this.episodeForm.controls, label: string): string | null {
+    return fieldError(this.episodeForm.controls[name], label);
+  }
+
+  protected async openEpisodes(item: AdminContent): Promise<void> {
+    this.episodesFor.set(item);
+    this.episodeList.set([]);
+    this.newEpisode();
+    try {
+      this.episodeList.set(await firstValueFrom(this.api.episodes(item.id)));
+      this.newEpisode();
+    } catch (e) {
+      this.toast.show(errorMessage(e), 'error');
+    }
+  }
+
+  /** Prepara el formulario con el siguiente número de capítulo de la última temporada. */
+  protected newEpisode(): void {
+    const list = this.episodeList();
+    const season = list.length ? Math.max(...list.map((e) => e.season)) : 1;
+    const next = Math.max(0, ...list.filter((e) => e.season === season).map((e) => e.number)) + 1;
+    this.editingEpisode.set(null);
+    this.episodeForm.reset({ season, number: next, title: '', description: '', durationMinutes: this.episodesFor()?.durationMinutes ?? 45 });
+  }
+
+  protected editEpisode(e: Episode): void {
+    this.editingEpisode.set(e);
+    this.episodeForm.reset({ ...e, description: e.description ?? '' });
+  }
+
+  protected async saveEpisode(): Promise<void> {
+    const series = this.episodesFor();
+    this.episodeForm.markAllAsTouched();
+    if (!series || this.episodeForm.invalid) return;
+    this.savingEpisode.set(true);
+    const raw = this.episodeForm.getRawValue();
+    const input = { ...raw, title: raw.title.trim(), description: raw.description.trim() || null };
+    try {
+      const current = this.editingEpisode();
+      const saved = await firstValueFrom(current ? this.api.updateEpisode(current.id, input) : this.api.addEpisode(series.id, input));
+      this.episodeList.update((list) =>
+        [...list.filter((x) => x.id !== saved.id), saved].sort((a, b) => a.season - b.season || a.number - b.number),
+      );
+      this.toast.show(current ? 'Capítulo actualizado' : `Agregaste T${saved.season}:E${saved.number}`, 'success');
+      this.newEpisode();
+    } catch (e) {
+      this.toast.show(errorMessage(e), 'error');
+    } finally {
+      this.savingEpisode.set(false);
+    }
+  }
+
+  protected async removeEpisode(e: Episode): Promise<void> {
+    if (!(await this.confirm.ask(`¿Eliminar «${e.title}»?`, `Temporada ${e.season}, capítulo ${e.number}.`, 'Eliminar'))) return;
+    try {
+      await firstValueFrom(this.api.deleteEpisode(e.id));
+      this.episodeList.update((list) => list.filter((x) => x.id !== e.id));
+      if (this.editingEpisode()?.id === e.id) this.newEpisode();
+    } catch (err) {
+      this.toast.show(errorMessage(err), 'error');
     }
   }
 

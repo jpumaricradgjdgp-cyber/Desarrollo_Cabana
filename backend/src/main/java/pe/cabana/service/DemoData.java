@@ -8,8 +8,8 @@ import pe.cabana.model.*;
 import pe.cabana.repository.*;
 @Component @Profile("demo")
 public class DemoData implements CommandLineRunner {
-  private final GenreRepository genres;private final AccountRepository accounts;private final ContentRepository contents;private final ReviewRepository reviews;
-  public DemoData(AccountRepository a,ContentRepository c,GenreRepository g,ReviewRepository r){accounts=a;contents=c;genres=g;reviews=r;}
+  private final GenreRepository genres;private final AccountRepository accounts;private final ContentRepository contents;private final ReviewRepository reviews;private final EpisodeRepository episodes;
+  public DemoData(AccountRepository a,ContentRepository c,GenreRepository g,ReviewRepository r,EpisodeRepository e){accounts=a;contents=c;genres=g;reviews=r;episodes=e;}
   public void run(String...args){
     var a=new Account();a.id=UUID.fromString("10000000-0000-0000-0000-000000000001");a.email="admin@cabana.demo";a.name="Administrador";a.role="ADMIN";a.passwordHash=new BCryptPasswordEncoder().encode("Cabana2026!");accounts.save(a);
     var u=new Account();u.id=UUID.fromString("10000000-0000-0000-0000-000000000002");u.email="usuario@cabana.demo";u.name="Lucía";u.passwordHash=new BCryptPasswordEncoder().encode("Cabana2026!");accounts.save(u);
@@ -27,6 +27,12 @@ public class DemoData implements CommandLineRunner {
     add("Game of Thrones","Varias familias disputan el poder en los Siete Reinos.","SERIES",2011,57,8,"Fantasía","",false,"18+");
     add("Viernes 13, parte 2","Una nueva generación vuelve a Crystal Lake. La leyenda de Jason convierte una escapada al bosque en una noche de terror.","MOVIE",1981,86,0,"Terror","jason-movie.png",false,"18+");
     catalogo();
+    episode("Stranger Things",1,1,"Capítulo uno: La desaparición de Will Byers","Will desaparece de camino a casa y una niña misteriosa aparece en el bosque.",48);
+    episode("Stranger Things",1,2,"Capítulo dos: La loca de la calle Maple","Los chicos esconden a Once mientras la búsqueda de Will se complica.",55);
+    episode("Stranger Things",1,3,"Capítulo tres: Holly, Jolly","Joyce intenta comunicarse con Will usando luces de Navidad.",51);
+    episode("Dark",1,1,"Secretos","En 2019 desaparece un niño en Winden y viejos secretos salen a la luz.",51);
+    episode("Dark",1,2,"Mentiras","Mikkel despierta en un lugar que no reconoce mientras su familia lo busca.",44);
+    episode("Dark",1,3,"Pasado y presente","Ulrich sigue una pista que conecta la desaparición con 1986.",45);
     review(u,"Dark",5,"La mejor serie de viajes en el tiempo. Hay que verla con atención.");
     review(a,"Dark",4,"Compleja, pero muy bien cerrada.");
     review(u,"Stranger Things",4,"Nostalgia ochentera y mucho misterio.");
@@ -65,6 +71,9 @@ public class DemoData implements CommandLineRunner {
     add("Rick y Morty","Un científico alcohólico arrastra a su nieto a peligrosas aventuras por el multiverso.","SERIES",2013,22,8,"Animación","catalogo/rick-and-morty.jpg",false,"16+");
     add("Los Simpson","La familia más famosa de Springfield y sus disparatadas aventuras de cada día.","SERIES",1989,22,36,"Animación","catalogo/los-simpson.jpg",false,"7+");
     add("Chucky","Un adolescente compra un muñeco antiguo en una venta de garaje y una ola de crímenes sacude su pueblo.","SERIES",2021,45,3,"Terror","catalogo/chucky-serie.jpg",false,"18+");
+  }
+  private void episode(String series,int season,int number,String title,String description,int minutes){
+    var e=new Episode();e.content=contents.search(series,"SERIES","").get(0);e.season=season;e.number=number;e.title=title;e.description=description;e.durationMinutes=minutes;episodes.save(e);
   }
   private void review(Account account,String title,int rating,String comment){
     var r=new Review();r.account=account;r.content=contents.search(title,"","").get(0);r.rating=rating;r.comment=comment;r.createdAt=java.time.Instant.now();reviews.save(r);

@@ -1,0 +1,32 @@
+# Blueprint de Render: despliega Cabaña (Angular + Spring Boot en un solo contenedor) conectado a Supabase.
+# En Render: New > Blueprint > elige este repositorio. Los valores con sync: false se piden al crear el servicio.
+services:
+  - type: web
+    name: cabana
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: free
+    region: ohio            # cerca de Supabase us-east-2
+    branch: main
+    healthCheckPath: /api/config
+    autoDeploy: true
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: supabase
+      - key: SECURE_COOKIES
+        value: "true"
+      - key: FRONTEND_ORIGIN       # https://<tu-servicio>.onrender.com (sin barra final)
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_DB_URL       # usa el Session pooler (IPv4), igual que en tu backend/.env
+        sync: false
+      - key: SUPABASE_DB_USER
+        sync: false
+      - key: SUPABASE_DB_PASSWORD
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

@@ -1,0 +1,73 @@
+@if (auth.user(); as user) {
+  <section class="page">
+    <header class="hero card">
+      <span class="avatar">{{ auth.initials() }}</span>
+      <div class="who">
+        <h1>{{ user.name }}</h1>
+        <p>{{ user.email }}</p>
+        <span class="badge">{{ user.role === 'ADMIN' ? 'Administrador' : 'Usuario' }}</span>
+      </div>
+      <div class="numbers">
+        <a routerLink="/mi-lista"><strong>{{ stats()?.saved ?? '–' }}</strong><small>En Mi lista</small></a>
+        <a routerLink="/historial"><strong>{{ stats()?.watched ?? '–' }}</strong><small>Vistos</small></a>
+        <a href="#mis-resenas"><strong>{{ stats()?.reviews ?? '–' }}</strong><small>Reseñas</small></a>
+      </div>
+    </header>
+
+    <div class="cols">
+      <form class="card panel" (ngSubmit)="saveName()" novalidate>
+        <h2><app-icon name="user" />Datos personales</h2>
+        <label class="field">
+          <span>Nombre</span>
+          <input class="input" [formControl]="nameForm" maxlength="80" [class.invalid]="nameError()" />
+          @if (nameError(); as m) { <small class="error-text">{{ m }}</small> }
+        </label>
+        <label class="field">
+          <span>Correo</span>
+          <input class="input" [value]="user.email" disabled />
+          <small class="hint">El correo identifica tu cuenta y no se puede cambiar.</small>
+        </label>
+        <button class="btn btn-primary" type="submit" [disabled]="savingName()">{{ savingName() ? 'Guardando…' : 'Guardar nombre' }}</button>
+      </form>
+
+      <form class="card panel" [formGroup]="passwordForm" (ngSubmit)="savePassword()" novalidate>
+        <h2><app-icon name="shield" />Cambiar contraseña</h2>
+        @if (passwordError()) { <div class="alert error" role="alert">{{ passwordError() }}</div> }
+        <label class="field">
+          <span>Contraseña actual</span>
+          <input class="input" type="password" formControlName="current" autocomplete="current-password" [class.invalid]="pwdError('current', 'La contraseña actual')" />
+          @if (pwdError('current', 'La contraseña actual'); as m) { <small class="error-text">{{ m }}</small> }
+        </label>
+        <label class="field">
+          <span>Nueva contraseña</span>
+          <input class="input" type="password" formControlName="password" autocomplete="new-password" [class.invalid]="pwdError('password', 'La contraseña')" />
+          <span class="meter" [attr.data-score]="score()" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+          @if (pwdError('password', 'La contraseña'); as m) { <small class="error-text">{{ m }}</small> }
+        </label>
+        <label class="field">
+          <span>Repite la nueva contraseña</span>
+          <input class="input" type="password" formControlName="confirm" autocomplete="new-password" [class.invalid]="mismatch()" />
+          @if (mismatch()) { <small class="error-text">Las contraseñas no coinciden.</small> }
+        </label>
+        <button class="btn btn-primary" type="submit" [disabled]="savingPassword()">{{ savingPassword() ? 'Guardando…' : 'Cambiar contraseña' }}</button>
+      </form>
+    </div>
+
+    <section class="section" id="mis-resenas">
+      <div class="section-head"><h2><app-icon name="message" />Mis reseñas</h2></div>
+      @for (r of reviews(); track r.id) {
+        <article class="review card">
+          <a class="thumb" [routerLink]="['/titulo', r.content.id]"><app-poster [content]="r.content" /></a>
+          <div class="body">
+            <a [routerLink]="['/titulo', r.content.id]"><strong>{{ r.content.title }}</strong></a>
+            <div class="row"><app-rating-stars [value]="r.rating" /><small>{{ r.createdAt | date: 'd MMM y' }}</small></div>
+            @if (r.comment) { <p>{{ r.comment }}</p> }
+          </div>
+          <button class="icon-btn" type="button" aria-label="Eliminar reseña" (click)="deleteReview(r)"><app-icon name="trash" [size]="17" /></button>
+        </article>
+      } @empty {
+        <p class="hint">Todavía no escribiste reseñas. Califica un título desde su ficha.</p>
+      }
+    </section>
+  </section>
+}

@@ -1,0 +1,56 @@
+# Integración continua: en cada push y pull request compila y prueba el backend y el frontend.
+name: CI
+
+on:
+  push:
+    branches: [main, angular]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend · Spring Boot
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Pruebas JUnit (modo demo con H2)
+        run: ./mvnw -B -ntp test
+        working-directory: backend
+      - name: Publicar reportes de pruebas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-backend
+          path: backend/target/surefire-reports/
+
+  frontend:
+    name: Frontend · Angular
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-angular
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend-angular/package-lock.json
+      - run: npm ci
+      - name: Compilación de producción
+        run: npm run build
+      - name: Pruebas unitarias (Vitest)
+        run: npx ng test --watch=false
+
+  docker:
+    name: Imagen Docker
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir la imagen que usa Render
+        run: docker build -f backend/Dockerfile -t cabana:ci .

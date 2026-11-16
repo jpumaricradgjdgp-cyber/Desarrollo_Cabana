@@ -109,6 +109,71 @@ class CabanaIntegrationTest {
       .andExpect(jsonPath("$.components.securitySchemes.bearer.scheme").value("bearer"))
       .andExpect(jsonPath("$.paths['/api/me/reviews/{id}']").exists());
   }
+  private String json(String body){return body.replace('\'','"');}
+  private String loginAs(String email,String password) throws Exception {
+    return json.readTree(mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(json("{'email':'"+email+"','password':'"+password+"'}"))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).get("accessToken").asText();
+  }
+  @Test void profileNamePasswordAndStatsBelongToTheUser() throws Exception {
+    String token=register("profile");
+    mvc.perform(get("/api/auth/me").header("Authorization","Bearer "+token)).andExpect(status().isOk());
+    mvc.perform(patch("/api/me/profile").header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content(json("{'name':'Nuevo Nombre'}"))).andExpect(status().isOk()).andExpect(jsonPath("$.name").value("Nuevo Nombre"));
+    mvc.perform(put("/api/me/password").header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content(json("{'currentPassword':'Incorrecta1','newPassword':'NuevaClave2026'}"))).andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("La contraseña actual no es correcta."));
+    mvc.perform(put("/api/me/password").header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content(json("{'currentPassword':'Password123!','newPassword':'NuevaClave2026'}"))).andExpect(status().isOk());
+    mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(json("{'email':'profile@example.test','password':'Password123!'}"))).andExpect(status().isUnauthorized()).andExpect(jsonPath("$.message").value("Correo o contraseña incorrectos."));
+    String fresh=loginAs("profile@example.test","NuevaClave2026");
+    mvc.perform(get("/api/me/stats").header("Authorization","Bearer "+fresh)).andExpect(status().isOk()).andExpect(jsonPath("$.reviews").value(0));
+    mvc.perform(post("/api/auth/forgot").contentType(MediaType.APPLICATION_JSON).content(json("{'email':'profile@example.test'}"))).andExpect(status().isOk()).andExpect(jsonPath("$.message").isNotEmpty());
+    mvc.perform(post("/api/auth/reset").header("Authorization","Bearer "+fresh).contentType(MediaType.APPLICATION_JSON).content(json("{'password':'OtraClave2026'}"))).andExpect(status().isOk());
+    loginAs("profile@example.test","OtraClave2026");
+  }
+  @Test void adminsManageRolesButNotTheirOwn() throws Exception {
+    String admin=admin(),user=register("promoted");
+    var me=json.readTree(mvc.perform(get("/api/auth/me").header("Authorization","Bearer "+user)).andReturn().getResponse().getContentAsString());
+    String id=me.get("id").asText();
+    mvc.perform(get("/api/admin/users").header("Authorization","Bearer "+user)).andExpect(status().isForbidden());
+    mvc.perform(get("/api/admin/users").header("Authorization","Bearer "+admin)).andExpect(status().isOk()).andExpect(jsonPath("$[?(@.id=='"+id+"')].role").value("USER"));
+    mvc.perform(put("/api/admin/users/10000000-0000-0000-0000-000000000001/role").header("Authorization","Bearer "+admin).contentType(MediaType.APPLICATION_JSON).content(json("{'role':'USER'}"))).andExpect(status().isConflict());
+    mvc.perform(put("/api/admin/users/"+id+"/role").header("Authorization","Bearer "+admin).contentType(MediaType.APPLICATION_JSON).content(json("{'role':'JEFE'}"))).andExpect(status().isBadRequest());
+    mvc.perform(put("/api/admin/users/"+id+"/role").header("Authorization","Bearer "+admin).contentType(MediaType.APPLICATION_JSON).content(json("{'role':'ADMIN'}"))).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("ADMIN"));
+    mvc.perform(get("/api/admin/stats").header("Authorization","Bearer "+user)).andExpect(status().isOk());
+  }
+  @Test void episodesBelongToSeriesWithinTheirSeasons() throws Exception {
+    String admin=admin();
+    String dark=json.readTree(mvc.perform(get("/api/catalog").param("q","Dark").param("type","SERIES")).andReturn().getResponse().getContentAsString()).get(0).get("id").asText();
+    String movie=json.readTree(mvc.perform(get("/api/catalog").param("type","MOVIE")).andReturn().getResponse().getContentAsString()).get(0).get("id").asText();
+    mvc.perform(get("/api/catalog/"+dark+"/episodes")).andExpect(status().isOk()).andExpect(jsonPath("$[0].title").value("Secretos"));
+    String ep=json("{'season':2,'number':1,'title':'Sic Mundus','durationMinutes':50}");
+    mvc.perform(post("/api/admin/catalog/"+dark+"/episodes").header("Authorization","Bearer "+register("noadmin")).contentType(MediaType.APPLICATION_JSON).content(ep)).andExpect(status().isForbidden());
+    mvc.perform(post("/api/admin/catalog/"+movie+"/episodes").header("Authorization","Bearer "+admin).contentType(MediaType.APPLICATION_JSON).content(ep)).andExpect(status().isBadRequest());
+    mvc.perform(post("/api/admin/catalog/"+dark+"/episodes").header("Authorization","Bearer "+admin).contentType(MediaType.APPLICATION_JSON).content(ep.replace("\"season\":2","\"season\":9"))).andExpect(status().isBadRequest());
+    var created=json.readTree(mvc.perform(post("/api/admin/catalog/"+dark+"/episodes").header("Authorization","Bearer "+admin).contentType(MediaType.APPLICATION_JSON).content(ep)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+    mvc.perform(post("/api/admin/catalog/"+dark+"/episodes").header("Authorization","Bearer "+admin).contentType(MediaType.APPLICATION_JSON).content(ep)).andExpect(status().isConflict());
+    mvc.perform(put("/api/admin/episodes/"+created.get("id").asText()).header("Authorization","Bearer "+admin).contentType(MediaType.APPLICATION_JSON).content(ep.replace("Sic Mundus","Sic Mundus Creatus Est"))).andExpect(status().isOk()).andExpect(jsonPath("$.title").value("Sic Mundus Creatus Est"));
+    mvc.perform(delete("/api/admin/episodes/"+created.get("id").asText()).header("Authorization","Bearer "+admin)).andExpect(status().isOk());
+  }
+  @Test void trailersOnlyAcceptYoutubeLinks() throws Exception {
+    String token=admin();
+    String base="{'title':'Con trailer','description':'Prueba','type':'MOVIE','releaseYear':2026,'durationMinutes':90,'seasons':0,'genre':'Drama','imageUrl':'/assets/dark.jpg','featured':false,'ageRating':'13+','trailerUrl':'URL'}";
+    mvc.perform(post("/api/admin/catalog").header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content(json(base.replace("URL","https://evil.test/video")))).andExpect(status().isBadRequest());
+    var created=mvc.perform(post("/api/admin/catalog").header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content(json(base.replace("URL","https://www.youtube.com/watch?v=abcdefghijk")))).andExpect(status().isOk()).andExpect(jsonPath("$.trailerUrl").value("https://www.youtube.com/watch?v=abcdefghijk")).andReturn();
+    mvc.perform(delete("/api/admin/catalog/"+json.readTree(created.getResponse().getContentAsString()).get("id").asText()).header("Authorization","Bearer "+token)).andExpect(status().isOk());
+  }
+  @Test void historyIsOrderedAndRecommendationsFollowTaste() throws Exception {
+    String token=register("taste");
+    mvc.perform(get("/api/auth/me").header("Authorization","Bearer "+token)).andExpect(status().isOk());
+    var terror=json.readTree(mvc.perform(get("/api/catalog").param("genre","Terror")).andReturn().getResponse().getContentAsString());
+    String first=terror.get(0).get("id").asText(),second=terror.get(1).get("id").asText();
+    mvc.perform(put("/api/me/list/"+first).header("Authorization","Bearer "+token)).andExpect(status().isOk());
+    mvc.perform(put("/api/me/progress/"+first).header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content("{\"seconds\":10}")).andExpect(status().isOk());
+    Thread.sleep(5);
+    mvc.perform(put("/api/me/progress/"+second).header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content("{\"seconds\":20}")).andExpect(status().isOk());
+    mvc.perform(get("/api/me/progress").header("Authorization","Bearer "+token)).andExpect(jsonPath("$[0].content.id").value(second)).andExpect(jsonPath("$[0].updatedAt").isNotEmpty());
+    mvc.perform(get("/api/me/recommendations").header("Authorization","Bearer "+token)).andExpect(status().isOk())
+      .andExpect(jsonPath("$[0].content.genre").value("Terror")).andExpect(jsonPath("$[0].reason").value("Porque te gusta Terror"))
+      .andExpect(jsonPath("$[?(@.content.id=='"+first+"')]").isEmpty());
+    mvc.perform(delete("/api/me/progress/"+second).header("Authorization","Bearer "+token)).andExpect(status().isOk());
+    mvc.perform(get("/api/me/progress").header("Authorization","Bearer "+token)).andExpect(jsonPath("$.length()").value(1));
+  }
   static byte[] raster(String format,int width,int height) throws Exception {
     var out=new java.io.ByteArrayOutputStream();
     javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(width,height,java.awt.image.BufferedImage.TYPE_INT_RGB),format,out);

@@ -21,4 +21,6 @@ COPY --from=build /app/backend/target/cabana-1.0.0.jar app.jar
 USER 10001
 EXPOSE 8080
 ENV SPRING_PROFILES_ACTIVE=supabase
+# Ajusta la memoria de Java al límite del contenedor (el plan gratuito de Render tiene 512 MB).
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+UseSerialGC"
 ENTRYPOINT ["java","-jar","app.jar"]

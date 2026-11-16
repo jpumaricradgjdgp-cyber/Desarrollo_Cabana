@@ -1,3 +1,4 @@
+import { optionalText } from '../../core/query-param';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/catalog.service';
@@ -36,7 +37,7 @@ const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLo
 })
 export class SearchPage {
   protected readonly catalog = inject(CatalogService);
-  readonly q = input<string>('');
+  readonly q = input('', { transform: optionalText });
   protected readonly results = computed(() => {
     const term = normalize(this.q().trim());
     if (!term) return this.catalog.items();

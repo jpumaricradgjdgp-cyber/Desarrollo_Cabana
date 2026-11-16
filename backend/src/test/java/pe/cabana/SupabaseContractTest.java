@@ -66,6 +66,12 @@ class SupabaseContractTest {
     mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content("{\"email\":\"contract@example.test\",\"password\":\"Password123!\",\"name\":\"Contrato\"}")).andExpect(status().isOk()).andExpect(jsonPath("$.accessToken").isEmpty()).andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("confirmar")));
     mvc.perform(post("/api/auth/refresh").cookie(new jakarta.servlet.http.Cookie("cabana_refresh","test-refresh"))).andExpect(status().isOk()).andExpect(jsonPath("$.accessToken").value(token));
   }
+  @Test void passwordRecoveryAndResetAreForwardedToSupabase() throws Exception {
+    mvc.perform(post("/api/auth/forgot").contentType(MediaType.APPLICATION_JSON).content("{\"email\":\"contract@example.test\"}")).andExpect(status().isOk()).andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("enlace")));
+    mvc.perform(get("/api/auth/me").header("Authorization","Bearer "+token)).andExpect(status().isOk());
+    mvc.perform(post("/api/auth/reset").header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content("{\"password\":\"NuevaClave2026\"}")).andExpect(status().isOk());
+    mvc.perform(post("/api/auth/reset").contentType(MediaType.APPLICATION_JSON).content("{\"password\":\"NuevaClave2026\"}")).andExpect(status().isUnauthorized());
+  }
   @Test void rolesComeFromDatabaseAndStorageUrlsAreSigned() throws Exception {
     accounts.findById(USER).ifPresent(a->{a.role="USER";accounts.save(a);});
     mvc.perform(get("/api/config")).andExpect(status().isOk()).andExpect(jsonPath("$.demo").value(false));

@@ -97,6 +97,21 @@
       </section>
     }
 
+    <!-- Recomendaciones personalizadas -->
+    @if (library.recommendations().length) {
+      <section class="section">
+        <div class="section-head"><h2><app-icon name="sparkles" />Recomendado para ti</h2><span class="hint">Según lo que guardas, ves y calificas</span></div>
+        <app-scroll-row>
+          @for (r of library.recommendations(); track r.content.id) {
+            <div class="rec">
+              <app-content-card [content]="r.content" />
+              <span class="reason">{{ r.reason }}</span>
+            </div>
+          }
+        </app-scroll-row>
+      </section>
+    }
+
     <!-- Lo más reciente -->
     <section class="section">
       <div class="section-head"><h2><app-icon name="sparkles" />Lo más reciente</h2><span class="hint">Por año de estreno</span></div>

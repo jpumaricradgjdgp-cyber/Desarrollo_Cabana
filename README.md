@@ -10,6 +10,11 @@ Plataforma de streaming con **frontend Angular 21** y **backend Java 21 + Spring
 - **Panel ADMIN** con indicadores, gráficos por género, CRUD con búsqueda y paginación, subida de portadas por arrastre y moderación de reseñas.
 - **Swagger UI** en `/swagger-ui.html`.
 - Bases existentes en Supabase: ejecuta `supabase/07_resenas.sql` después de la migración 06, y `supabase/08_catalogo_portadas.sql` para cargar los 26 títulos con portada.
+- **Recuperar contraseña** por correo, mensajes de error claros de Supabase y página **Mi perfil** (nombre, contraseña, mis reseñas).
+- **Gestión de usuarios** en el panel ADMIN: cambio de rol USER ↔ ADMIN.
+- **Temporadas y episodios** para series, **tráileres de YouTube** e **Historial** con **«Recomendado para ti»**.
+- **CI en GitHub Actions** (pruebas de backend y frontend + imagen Docker) y **despliegue en Render**: ver [Despliegue](docs/DESPLIEGUE.md).
+- Antes de iniciar en modo Supabase ejecuta `supabase/09_episodios_trailers_historial.sql`.
 - **Catálogo ampliado a 39 títulos** con portadas en `frontend-angular/public/assets/catalogo/`. Si falta un archivo, la interfaz genera una portada tipográfica; el panel ADMIN permite elegir cualquier portada de esa biblioteca.
 
 | Cuenta demo | Correo | Contraseña |
