@@ -27,6 +27,43 @@ public class DemoData implements CommandLineRunner {
     add("Game of Thrones","Varias familias disputan el poder en los Siete Reinos.","SERIES",2011,57,8,"Fantasía","",false,"18+");
     add("Viernes 13, parte 2","Una nueva generación vuelve a Crystal Lake. La leyenda de Jason convierte una escapada al bosque en una noche de terror.","MOVIE",1981,86,0,"Terror","jason-movie.png",false,"18+");
     catalogo();
+    // Tráileres oficiales de YouTube (verificados con oEmbed: existen y permiten insertarse).
+    trailer("Stranger Things","https://www.youtube.com/watch?v=Wre1F5YyIlA");
+    trailer("Dark","https://www.youtube.com/watch?v=ESEUoa-mz2c");
+    trailer("WandaVision","https://www.youtube.com/watch?v=R2oA59hYN_Y");
+    trailer("Interstellar","https://www.youtube.com/watch?v=LYS2O1nl9iM");
+    trailer("La La Land","https://www.youtube.com/watch?v=0pdqf4P9MB8");
+    trailer("El origen","https://www.youtube.com/watch?v=RV9L7ui9Cn8");
+    trailer("El viaje de Chihiro","https://www.youtube.com/watch?v=fDUFP7EeXLE");
+    trailer("Breaking Bad","https://www.youtube.com/watch?v=mXd1zTwcQ18");
+    trailer("The Last of Us","https://www.youtube.com/watch?v=yyGetSp7CIc");
+    trailer("Game of Thrones","https://www.youtube.com/watch?v=KPLWWIOCOOQ");
+    trailer("Viernes 13, parte 2","https://www.youtube.com/watch?v=3mNnJuOoI80");
+    trailer("Avengers: Doomsday","https://www.youtube.com/watch?v=lAr_uspgHm8");
+    trailer("Spider-Man: Brand New Day","https://www.youtube.com/watch?v=pqLSLoDkZWE");
+    trailer("Michael","https://www.youtube.com/watch?v=o1HQSh6zZ8s");
+    trailer("Obsesión","https://www.youtube.com/watch?v=gMC8kkwbIQQ");
+    trailer("Scary Movie 6","https://www.youtube.com/watch?v=HMTKiPCKgpw");
+    trailer("Pelé: el nacimiento de una leyenda","https://www.youtube.com/watch?v=nStu_Nz7kQ8");
+    trailer("La máscara","https://www.youtube.com/watch?v=LZl69yk5lEY");
+    trailer("Joker","https://www.youtube.com/watch?v=TobNCFMK_bs");
+    trailer("Ted","https://www.youtube.com/watch?v=9fbo_pQvU7M");
+    trailer("El conjuro 2","https://www.youtube.com/watch?v=cuDBjj_Gs0M");
+    trailer("La noche del demonio","https://www.youtube.com/watch?v=62rpZcMYa0A");
+    trailer("Ouija","https://www.youtube.com/watch?v=PcX-nom2UCM");
+    trailer("Annabelle","https://www.youtube.com/watch?v=VDE7DxXJ3bg");
+    trailer("El culto de Chucky","https://www.youtube.com/watch?v=ksTv0_dGiX4");
+    trailer("El títere","https://www.youtube.com/watch?v=8b_HVtHmK30");
+    trailer("Scream","https://www.youtube.com/watch?v=RZveBrcxXqA");
+    trailer("It: Capítulo dos","https://www.youtube.com/watch?v=crDNzugmuGY");
+    trailer("Grey's Anatomy","https://www.youtube.com/watch?v=ZfF1D73Vqnc");
+    trailer("Dr. House","https://www.youtube.com/watch?v=MczMB8nU1sY");
+    trailer("The Big Bang Theory","https://www.youtube.com/watch?v=eyWZk-UtCQo");
+    trailer("Ted (serie)","https://www.youtube.com/watch?v=aq2Vt7OvQG0");
+    trailer("Futurama","https://www.youtube.com/watch?v=PMYslwcXC4s");
+    trailer("Rick y Morty","https://www.youtube.com/watch?v=ySYnTO7leqI");
+    trailer("Los Simpson","https://www.youtube.com/watch?v=CLPoxiIR2ss");
+    trailer("Chucky","https://www.youtube.com/watch?v=Za3L68Y6ZFY");
     episode("Stranger Things",1,1,"Capítulo uno: La desaparición de Will Byers","Will desaparece de camino a casa y una niña misteriosa aparece en el bosque.",48);
     episode("Stranger Things",1,2,"Capítulo dos: La loca de la calle Maple","Los chicos esconden a Once mientras la búsqueda de Will se complica.",55);
     episode("Stranger Things",1,3,"Capítulo tres: Holly, Jolly","Joyce intenta comunicarse con Will usando luces de Navidad.",51);
@@ -71,6 +108,9 @@ public class DemoData implements CommandLineRunner {
     add("Rick y Morty","Un científico alcohólico arrastra a su nieto a peligrosas aventuras por el multiverso.","SERIES",2013,22,8,"Animación","catalogo/rick-and-morty.jpg",false,"16+");
     add("Los Simpson","La familia más famosa de Springfield y sus disparatadas aventuras de cada día.","SERIES",1989,22,36,"Animación","catalogo/los-simpson.jpg",false,"7+");
     add("Chucky","Un adolescente compra un muñeco antiguo en una venta de garaje y una ola de crímenes sacude su pueblo.","SERIES",2021,45,3,"Terror","catalogo/chucky-serie.jpg",false,"18+");
+  }
+  private void trailer(String title,String url){
+    contents.findAll().stream().filter(c->c.title.equals(title)).forEach(c->{c.trailerUrl=url;contents.save(c);});
   }
   private void episode(String series,int season,int number,String title,String description,int minutes){
     var e=new Episode();e.content=contents.search(series,"SERIES","").get(0);e.season=season;e.number=number;e.title=title;e.description=description;e.durationMinutes=minutes;episodes.save(e);
