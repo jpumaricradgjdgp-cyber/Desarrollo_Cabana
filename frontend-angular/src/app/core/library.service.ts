@@ -2,7 +2,7 @@ import { Injectable, computed, effect, inject, signal, untracked } from '@angula
 import { firstValueFrom } from 'rxjs';
 import { ApiService, errorMessage } from './api.service';
 import { AuthService } from './auth.service';
-import { Content, Progress, Rating } from './models';
+import { Content, Progress, Rating, Recommendation } from './models';
 import { ToastService } from './toast.service';
 
 /**
@@ -18,13 +18,14 @@ export class LibraryService {
   readonly saved = signal<Content[]>([]);
   readonly progress = signal<Progress[]>([]);
   readonly ratings = signal<Map<string, Rating>>(new Map());
+  readonly recommendations = signal<Recommendation[]>([]);
   readonly savedIds = computed(() => new Set(this.saved().map((c) => c.id)));
   readonly progressById = computed(() => new Map(this.progress().map((p) => [p.content.id, p.seconds])));
 
   constructor() {
     effect(() => {
       const user = this.auth.user();
-      untracked(() => (user ? this.loadUserData() : (this.saved.set([]), this.progress.set([]))));
+      untracked(() => (user ? this.loadUserData() : (this.saved.set([]), this.progress.set([]), this.recommendations.set([]))));
     });
     this.loadRatings();
   }
@@ -37,8 +38,30 @@ export class LibraryService {
       ]);
       this.saved.set(saved);
       this.progress.set(progress.filter((p) => p.seconds > 0));
+      this.loadRecommendations();
     } catch {
       /* la sesión pudo expirar; el interceptor ya intentó renovarla */
+    }
+  }
+
+  async loadRecommendations(): Promise<void> {
+    try {
+      this.recommendations.set(await firstValueFrom(this.api.recommendations()));
+    } catch {
+      this.recommendations.set([]);
+    }
+  }
+
+  /** Quita un título del historial (y de «Continuar viendo»). */
+  async forget(content: Content): Promise<void> {
+    const before = this.progress();
+    this.progress.update((list) => list.filter((p) => p.content.id !== content.id));
+    try {
+      await firstValueFrom(this.api.forgetProgress(content.id));
+      this.toast.show(`Quitaste «${content.title}» del historial`, 'success');
+    } catch (e) {
+      this.progress.set(before);
+      this.toast.show(errorMessage(e), 'error');
     }
   }
 
@@ -66,6 +89,7 @@ export class LibraryService {
     try {
       await firstValueFrom(wasSaved ? this.api.unsave(content.id) : this.api.save(content.id));
       this.toast.show(wasSaved ? `Quitaste «${content.title}» de Mi lista` : `«${content.title}» está en Mi lista`, 'success');
+      this.loadRecommendations();
     } catch (e) {
       this.saved.update((list) => (wasSaved ? [content, ...list] : list.filter((c) => c.id !== content.id)));
       this.toast.show(errorMessage(e), 'error');
@@ -73,6 +97,6 @@ export class LibraryService {
   }
 
   updateProgress(content: Content, seconds: number): void {
-    this.progress.update((list) => [{ content, seconds }, ...list.filter((p) => p.content.id !== content.id)]);
+    this.progress.update((list) => [{ content, seconds, updatedAt: new Date().toISOString() }, ...list.filter((p) => p.content.id !== content.id)]);
   }
 }

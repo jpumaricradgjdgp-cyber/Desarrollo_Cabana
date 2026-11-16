@@ -41,6 +41,9 @@
             </button>
           </td>
           <td class="right actions">
+            @if (c.type === 'SERIES') {
+              <button class="icon-btn" type="button" aria-label="Episodios" title="Episodios" (click)="openEpisodes(c)"><app-icon name="layers" [size]="17" /></button>
+            }
             <button class="icon-btn" type="button" aria-label="Editar" (click)="open(c)"><app-icon name="edit" [size]="17" /></button>
             <button class="icon-btn danger" type="button" aria-label="Eliminar" (click)="remove(c)"><app-icon name="trash" [size]="17" /></button>
           </td>
@@ -154,6 +157,13 @@
             @if (err('imageUrl', 'La portada'); as m) { <small class="error-text">{{ m }}</small> }
           </label>
           <label class="field">
+            <span>Tráiler de YouTube (opcional)</span>
+            <input class="input" formControlName="trailerUrl" placeholder="https://www.youtube.com/watch?v=…" [class.invalid]="err('trailerUrl', 'El tráiler')" />
+            @if (err('trailerUrl', 'El tráiler'); as m) { <small class="error-text">{{ m }}</small> } @else { <small class="hint">Se muestra con el botón «Tráiler» en la ficha.</small> }
+          </label>
+        </div>
+        <div class="row2">
+          <label class="field">
             <span>Ruta del video (opcional)</span>
             <input class="input" formControlName="videoPath" placeholder="peliculas/mi-video.mp4" [class.invalid]="err('videoPath', 'La ruta')" />
             @if (err('videoPath', 'La ruta'); as m) { <small class="error-text">{{ m }}</small> } @else { <small class="hint">Archivo dentro del bucket privado «videos».</small> }
@@ -167,5 +177,64 @@
         </button>
       </div>
     </form>
+  </div>
+}
+
+@if (episodesFor(); as series) {
+  <div class="backdrop" (click)="episodesFor.set(null)">
+    <div class="modal wide" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h2>Episodios de «{{ series.title }}»</h2>
+        <button class="icon-btn" type="button" aria-label="Cerrar" (click)="episodesFor.set(null)"><app-icon name="x" /></button>
+      </div>
+      <div class="modal-body">
+        <div class="ep-list">
+          @for (e of episodeList(); track e.id) {
+            <div class="ep-row" [class.editing]="editingEpisode()?.id === e.id">
+              <span class="pill">T{{ e.season }}:E{{ e.number }}</span>
+              <span class="ep-title">{{ e.title }}</span>
+              <small class="muted">{{ e.durationMinutes }} min</small>
+              <button class="icon-btn" type="button" aria-label="Editar capítulo" (click)="editEpisode(e)"><app-icon name="edit" [size]="16" /></button>
+              <button class="icon-btn danger" type="button" aria-label="Eliminar capítulo" (click)="removeEpisode(e)"><app-icon name="trash" [size]="16" /></button>
+            </div>
+          } @empty {
+            <p class="hint">Esta serie todavía no tiene capítulos. Agrega el primero abajo.</p>
+          }
+        </div>
+        <form class="ep-form card" [formGroup]="episodeForm" (ngSubmit)="saveEpisode()" novalidate>
+          <h3>{{ editingEpisode() ? 'Editar capítulo' : 'Nuevo capítulo' }}</h3>
+          <div class="row3">
+            <label class="field">
+              <span>Temporada (1–{{ series.seasons }})</span>
+              <input class="input" type="number" formControlName="season" [max]="series.seasons" [class.invalid]="epErr('season', 'La temporada')" />
+              @if (epErr('season', 'La temporada'); as m) { <small class="error-text">{{ m }}</small> }
+            </label>
+            <label class="field">
+              <span>Capítulo</span>
+              <input class="input" type="number" formControlName="number" [class.invalid]="epErr('number', 'El número')" />
+              @if (epErr('number', 'El número'); as m) { <small class="error-text">{{ m }}</small> }
+            </label>
+            <label class="field">
+              <span>Duración (min)</span>
+              <input class="input" type="number" formControlName="durationMinutes" [class.invalid]="epErr('durationMinutes', 'La duración')" />
+              @if (epErr('durationMinutes', 'La duración'); as m) { <small class="error-text">{{ m }}</small> }
+            </label>
+          </div>
+          <label class="field">
+            <span>Título *</span>
+            <input class="input" formControlName="title" maxlength="150" [class.invalid]="epErr('title', 'El título')" />
+            @if (epErr('title', 'El título'); as m) { <small class="error-text">{{ m }}</small> }
+          </label>
+          <label class="field">
+            <span>Sinopsis (opcional)</span>
+            <textarea class="textarea" formControlName="description" maxlength="1000"></textarea>
+          </label>
+          <div class="ep-actions">
+            @if (editingEpisode()) { <button class="btn btn-ghost" type="button" (click)="newEpisode()">Cancelar edición</button> }
+            <button class="btn btn-primary" type="submit" [disabled]="savingEpisode()">{{ savingEpisode() ? 'Guardando…' : editingEpisode() ? 'Guardar capítulo' : 'Agregar capítulo' }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 }

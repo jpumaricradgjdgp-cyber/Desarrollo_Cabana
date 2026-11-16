@@ -27,6 +27,8 @@ import { Icon } from '../shared/icon';
             <app-icon name="bookmark" />Mi lista
             @if (savedCount()) { <span class="count">{{ savedCount() }}</span> }
           </a>
+          <a class="item" routerLink="/historial" routerLinkActive="active"><app-icon name="clock" />Historial</a>
+          <a class="item" routerLink="/perfil" routerLinkActive="active"><app-icon name="user" />Mi perfil</a>
           @if (auth.isAdmin()) {
             <a class="item" routerLink="/admin" routerLinkActive="active"><app-icon name="shield" />Panel ADMIN</a>
           }

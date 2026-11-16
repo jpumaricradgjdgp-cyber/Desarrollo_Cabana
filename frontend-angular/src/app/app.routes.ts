@@ -32,6 +32,20 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/my-list/my-list').then((m) => m.MyListPage),
   },
   {
+    path: 'historial',
+    title: 'Historial · Cabaña',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/history/history').then((m) => m.HistoryPage),
+  },
+  {
+    path: 'perfil',
+    title: 'Mi perfil · Cabaña',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile/profile').then((m) => m.ProfilePage),
+  },
+  { path: 'recuperar', title: 'Recuperar contraseña · Cabaña', loadComponent: () => import('./pages/auth/forgot').then((m) => m.ForgotPage) },
+  { path: 'restablecer', title: 'Nueva contraseña · Cabaña', loadComponent: () => import('./pages/auth/reset').then((m) => m.ResetPage) },
+  {
     path: 'login',
     title: 'Iniciar sesión · Cabaña',
     canActivate: [guestGuard],
@@ -51,6 +65,7 @@ export const routes: Routes = [
       { path: '', title: 'Panel · Cabaña', loadComponent: () => import('./pages/admin/dashboard').then((m) => m.DashboardPage) },
       { path: 'contenido', title: 'Contenido · Panel', loadComponent: () => import('./pages/admin/contents').then((m) => m.ContentsPage) },
       { path: 'resenas', title: 'Reseñas · Panel', loadComponent: () => import('./pages/admin/reviews').then((m) => m.ReviewsPage) },
+      { path: 'usuarios', title: 'Usuarios · Panel', loadComponent: () => import('./pages/admin/users').then((m) => m.UsersPage) },
     ],
   },
   { path: '**', title: 'No encontrado · Cabaña', loadComponent: () => import('./pages/not-found/not-found').then((m) => m.NotFoundPage) },

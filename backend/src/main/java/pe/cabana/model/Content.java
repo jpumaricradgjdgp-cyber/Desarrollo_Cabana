@@ -15,4 +15,5 @@ public class Content {
   @Column(length=1000) public String videoPath;
   @Column(nullable=false) public boolean featured;
   @Column(nullable=false,length=10) public String ageRating;
+  @Column(name="trailer_url",length=300) public String trailerUrl;
 }

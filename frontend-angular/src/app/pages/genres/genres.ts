@@ -1,3 +1,4 @@
+import { optionalText } from '../../core/query-param';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/catalog.service';
@@ -55,7 +56,7 @@ import { Icon } from '../../shared/icon';
 export class GenresPage {
   protected readonly catalog = inject(CatalogService);
   /** Query param ?g= enlazado como input gracias a withComponentInputBinding. */
-  readonly g = input<string>('');
+  readonly g = input('', { transform: optionalText });
   protected readonly hue = hue;
   protected readonly selected = computed(() => this.catalog.items().filter((c) => c.genre === this.g()));
 

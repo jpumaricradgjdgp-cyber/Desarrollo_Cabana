@@ -7,18 +7,19 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService, errorMessage } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { CatalogService } from '../../core/catalog.service';
-import { clock, hasImage, hue, lengthLabel, progressPercent, typeLabel } from '../../core/format';
+import { clock, hasImage, hue, lengthLabel, progressPercent, typeLabel, youtubeId } from '../../core/format';
 import { LibraryService } from '../../core/library.service';
-import { Content, ReviewSummary } from '../../core/models';
+import { Content, Episode, ReviewSummary } from '../../core/models';
 import { ConfirmService, ToastService } from '../../core/toast.service';
 import { ContentCard } from '../../shared/content-card';
 import { Icon } from '../../shared/icon';
 import { Poster } from '../../shared/poster';
 import { RatingStars } from '../../shared/rating-stars';
+import { TrailerModal } from '../../shared/trailer-modal';
 
 @Component({
   selector: 'app-detail',
-  imports: [RouterLink, ReactiveFormsModule, DatePipe, ContentCard, Icon, Poster, RatingStars],
+  imports: [RouterLink, ReactiveFormsModule, DatePipe, ContentCard, Icon, Poster, RatingStars, TrailerModal],
   templateUrl: './detail.html',
   styleUrl: './detail.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,6 +40,12 @@ export class DetailPage {
   protected readonly reviews = signal<ReviewSummary | null>(null);
   protected readonly saving = signal(false);
   protected readonly editing = signal(false);
+  protected readonly episodes = signal<Episode[]>([]);
+  protected readonly season = signal(1);
+  protected readonly showTrailer = signal(false);
+  protected readonly hasTrailer = computed(() => !!youtubeId(this.content()?.trailerUrl));
+  protected readonly seasons = computed(() => [...new Set(this.episodes().map((e) => e.season))].sort((a, b) => a - b));
+  protected readonly seasonEpisodes = computed(() => this.episodes().filter((e) => e.season === this.season()));
 
   protected readonly form = new FormGroup({
     rating: new FormControl(0, { nonNullable: true, validators: [Validators.min(1), Validators.max(5)] }),
@@ -86,6 +93,8 @@ export class DetailPage {
     this.notFound.set(false);
     this.reviews.set(null);
     this.editing.set(false);
+    this.episodes.set([]);
+    this.showTrailer.set(false);
     try {
       const content = await firstValueFrom(this.api.content(id));
       this.content.set(content);
@@ -94,7 +103,18 @@ export class DetailPage {
       this.notFound.set(true);
       return;
     }
+    if (this.content()?.type === 'SERIES') this.loadEpisodes(id);
     await this.loadReviews();
+  }
+
+  private async loadEpisodes(id: string): Promise<void> {
+    try {
+      const list = await firstValueFrom(this.api.episodes(id));
+      this.episodes.set(list);
+      this.season.set(list[0]?.season ?? 1);
+    } catch {
+      this.episodes.set([]);
+    }
   }
 
   private async loadReviews(): Promise<void> {

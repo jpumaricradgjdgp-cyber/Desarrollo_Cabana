@@ -7,6 +7,13 @@ import {
   AppConfig,
   Content,
   ContentInput,
+  Episode,
+  EpisodeInput,
+  MyReview,
+  Profile,
+  ProfileStats,
+  Recommendation,
+  UserAdmin,
   Playback,
   Progress,
   Rating,
@@ -53,6 +60,37 @@ export class ApiService {
   saveProgress(id: string, seconds: number) {
     return this.http.put<void>(`/api/me/progress/${id}`, { seconds: Math.max(0, Math.floor(seconds)) });
   }
+  forgetProgress(id: string) {
+    return this.http.delete<void>(`/api/me/progress/${id}`);
+  }
+  recommendations() {
+    return this.http.get<Recommendation[]>('/api/me/recommendations');
+  }
+  episodes(id: string) {
+    return this.http.get<Episode[]>(`/api/catalog/${id}/episodes`);
+  }
+
+  // ----- Perfil -----
+  rename(name: string) {
+    return this.http.patch<Profile>('/api/me/profile', { name });
+  }
+  changePassword(currentPassword: string, newPassword: string) {
+    return this.http.put<{ message: string }>('/api/me/password', { currentPassword, newPassword });
+  }
+  myStats() {
+    return this.http.get<ProfileStats>('/api/me/stats');
+  }
+  myReviews() {
+    return this.http.get<MyReview[]>('/api/me/reviews');
+  }
+  forgotPassword(email: string) {
+    return this.http.post<{ message: string }>('/api/auth/forgot', { email });
+  }
+  /** Usa el token del enlace de recuperación, no el de la sesión. */
+  resetPassword(recoveryToken: string, password: string) {
+    return this.http.post<{ message: string }>('/api/auth/reset', { password }, { headers: { Authorization: `Bearer ${recoveryToken}` } });
+  }
+
   playback(id: string) {
     return this.http.get<Playback>(`/api/playback/${id}`);
   }
@@ -84,6 +122,21 @@ export class ApiService {
     form.append('file', file, name);
     return this.http.post<{ imageUrl: string }>('/api/admin/images', form);
   }
+  addEpisode(contentId: string, input: EpisodeInput) {
+    return this.http.post<Episode>(`/api/admin/catalog/${contentId}/episodes`, input);
+  }
+  updateEpisode(id: string, input: EpisodeInput) {
+    return this.http.put<Episode>(`/api/admin/episodes/${id}`, input);
+  }
+  deleteEpisode(id: string) {
+    return this.http.delete<void>(`/api/admin/episodes/${id}`);
+  }
+  users() {
+    return this.http.get<UserAdmin[]>('/api/admin/users');
+  }
+  changeRole(id: string, role: 'USER' | 'ADMIN') {
+    return this.http.put<UserAdmin>(`/api/admin/users/${id}/role`, { role });
+  }
   stats() {
     return this.http.get<AdminStats>('/api/admin/stats');
   }
@@ -103,7 +156,9 @@ export function errorMessage(error: unknown, fallback = 'No se pudo completar la
     if (body?.message) return body.message;
     switch (error.status) {
       case 0:
-        return 'No hay conexión con el servidor. ¿Iniciaste el backend en el puerto 8080?';
+        return 'No hay conexión con el servidor. Revisa que Cabaña siga encendido.';
+      case 400:
+        return 'Revisa los datos e inténtalo de nuevo.';
       case 401:
         return 'Inicia sesión para continuar.';
       case 403:
@@ -114,6 +169,12 @@ export function errorMessage(error: unknown, fallback = 'No se pudo completar la
         return 'El archivo es demasiado grande (máximo 5 MB).';
       case 415:
         return 'Formato no permitido. Usa JPG o PNG.';
+      case 429:
+        return 'Demasiados intentos. Espera unos minutos.';
+      case 500:
+      case 502:
+      case 503:
+        return 'El servidor tuvo un problema. Inténtalo de nuevo en unos segundos.';
     }
   }
   return fallback;

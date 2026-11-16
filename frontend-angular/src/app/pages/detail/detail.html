@@ -39,11 +39,44 @@
             <button class="btn btn-glass btn-lg" type="button" (click)="library.toggle(c)">
               <app-icon [name]="library.isSaved(c.id) ? 'check' : 'plus'" />{{ library.isSaved(c.id) ? 'En Mi lista' : 'Mi lista' }}
             </button>
+            @if (hasTrailer()) {
+              <button class="btn btn-glass btn-lg" type="button" (click)="showTrailer.set(true)"><app-icon name="film" />Tráiler</button>
+            }
             <a class="btn btn-glass btn-lg" href="#resenas"><app-icon name="star" />Calificar</a>
           </div>
         </div>
       </div>
     </header>
+
+    @if (c.type === 'SERIES') {
+      <section class="section" id="episodios">
+        <div class="section-head">
+          <h2><app-icon name="tv" />Episodios</h2>
+          @if (seasons().length > 1) {
+            <div class="seasons" role="tablist" aria-label="Temporadas">
+              @for (s of seasons(); track s) {
+                <button type="button" role="tab" class="chip" [class.active]="season() === s" [attr.aria-selected]="season() === s" (click)="season.set(s)">Temporada {{ s }}</button>
+              }
+            </div>
+          } @else if (seasons().length === 1) {
+            <span class="pill">Temporada {{ seasons()[0] }}</span>
+          }
+        </div>
+        @for (e of seasonEpisodes(); track e.id) {
+          <article class="episode card">
+            <span class="ep-num">{{ e.number }}</span>
+            <div class="ep-body">
+              <strong>{{ e.title }}</strong>
+              @if (e.description) { <p>{{ e.description }}</p> }
+            </div>
+            <small class="ep-len">{{ e.durationMinutes }} min</small>
+            <button class="icon-btn round" type="button" [attr.aria-label]="'Reproducir ' + e.title" (click)="play()"><app-icon name="play" [size]="16" /></button>
+          </article>
+        } @empty {
+          <p class="hint">Aún no se publicaron los capítulos de esta serie. Tiene {{ c.seasons }} {{ c.seasons === 1 ? 'temporada' : 'temporadas' }}.</p>
+        }
+      </section>
+    }
 
     <!-- Reseñas -->
     <section class="section reviews" id="resenas">
@@ -125,6 +158,9 @@
       </section>
     }
   </article>
+  @if (showTrailer() && c.trailerUrl) {
+    <app-trailer-modal [url]="c.trailerUrl" [title]="c.title" (close)="showTrailer.set(false)" />
+  }
 } @else {
   <div class="skeleton" style="height: 420px; border-radius: 20px"></div>
 }

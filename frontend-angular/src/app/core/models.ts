@@ -14,6 +14,7 @@ export interface Content {
   imageUrl: string;
   featured: boolean;
   ageRating: AgeRating;
+  trailerUrl: string | null;
 }
 
 export interface AdminContent extends Content {
@@ -45,6 +46,46 @@ export interface AppConfig {
 export interface Progress {
   content: Content;
   seconds: number;
+  updatedAt?: string;
+}
+
+export interface Episode {
+  id: string;
+  season: number;
+  number: number;
+  title: string;
+  description: string | null;
+  durationMinutes: number;
+}
+export type EpisodeInput = Omit<Episode, 'id'>;
+
+export interface Recommendation {
+  content: Content;
+  reason: string;
+}
+
+export interface MyReview {
+  id: string;
+  content: Content;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface ProfileStats {
+  saved: number;
+  watched: number;
+  reviews: number;
+}
+
+export interface UserAdmin {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  saved: number;
+  watched: number;
+  reviews: number;
 }
 
 export interface Playback {

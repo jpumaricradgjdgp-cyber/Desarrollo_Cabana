@@ -21,7 +21,7 @@ class NormalizationTest {
  }
  @Test void rejectsUnknownGenreWithoutWritingContent(){
   long before=contents.count();
-  var input=new ContentInput("Sin género válido","Ejemplo","MOVIE",2026,90,0,"No existe","/assets/dark.jpg",null,false,"13+");
+  var input=new ContentInput("Sin género válido","Ejemplo","MOVIE",2026,90,0,"No existe","/assets/dark.jpg",null,false,"13+",null);
   assertThatThrownBy(()->catalog.put(null,input)).isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
   assertThat(contents.count()).isEqualTo(before);
  }

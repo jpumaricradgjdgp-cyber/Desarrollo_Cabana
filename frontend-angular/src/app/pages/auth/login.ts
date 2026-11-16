@@ -1,3 +1,5 @@
+import { HttpErrorResponse } from '@angular/common/http';
+import { optionalText } from '../../core/query-param';
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -45,6 +47,7 @@ import { Icon } from '../../shared/icon';
             </span>
             @if (err('password', 'La contraseña'); as m) { <small class="error-text">{{ m }}</small> }
           </label>
+          <a class="forgot" routerLink="/recuperar">¿Olvidaste tu contraseña?</a>
           <button class="btn btn-primary btn-lg btn-block" type="submit" [disabled]="loading()">
             {{ loading() ? 'Entrando…' : 'Entrar a la cabaña' }}
           </button>
@@ -71,7 +74,7 @@ export class LoginPage {
   private readonly toast = inject(ToastService);
   protected readonly config = inject(ConfigService);
   /** Ruta a la que volver después de iniciar sesión (?volver=). */
-  readonly volver = input<string>('');
+  readonly volver = input('', { transform: optionalText });
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly show = signal(false);
@@ -97,13 +100,20 @@ export class LoginPage {
     try {
       const { email, password } = this.form.getRawValue();
       await this.auth.login(email.trim(), password);
-      this.toast.show(`¡Hola, ${this.auth.user()?.name}! Bienvenido de vuelta.`, 'success');
-      const target = this.volver();
-      this.router.navigateByUrl(target.startsWith('/') && !target.startsWith('//') ? target : '/inicio');
     } catch (e) {
-      this.error.set(errorMessage(e, 'Correo o contraseña incorrectos.'));
-    } finally {
+      // Solo un error HTTP del servidor describe un problema de credenciales.
+      if (!(e instanceof HttpErrorResponse)) console.error(e);
+      this.error.set(
+        e instanceof HttpErrorResponse
+          ? errorMessage(e, 'No se pudo iniciar sesión. Inténtalo de nuevo.')
+          : 'Ocurrió un error inesperado al iniciar sesión. Recarga la página e inténtalo de nuevo.',
+      );
       this.loading.set(false);
+      return;
     }
+    this.loading.set(false);
+    this.toast.show(`¡Hola, ${this.auth.user()?.name}! Bienvenido de vuelta.`, 'success');
+    const target = this.volver();
+    this.router.navigateByUrl(target.startsWith('/') && !target.startsWith('//') ? target : '/inicio');
   }
 }

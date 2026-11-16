@@ -54,6 +54,11 @@ export class AuthService {
     return this.refreshing;
   }
 
+  /** Actualiza el perfil en memoria después de cambiar el nombre. */
+  setProfile(profile: Profile): void {
+    this.user.set(profile);
+  }
+
   async logout(): Promise<void> {
     try {
       await firstValueFrom(this.http.post('/api/auth/logout', null));

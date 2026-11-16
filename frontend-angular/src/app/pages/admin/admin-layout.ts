@@ -20,6 +20,7 @@ import { Icon } from '../../shared/icon';
         <a routerLink="/admin" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: true }"><app-icon name="chart" [size]="18" />Resumen</a>
         <a routerLink="/admin/contenido" routerLinkActive="on"><app-icon name="film" [size]="18" />Contenido</a>
         <a routerLink="/admin/resenas" routerLinkActive="on"><app-icon name="message" [size]="18" />Reseñas</a>
+        <a routerLink="/admin/usuarios" routerLinkActive="on"><app-icon name="users" [size]="18" />Usuarios</a>
       </nav>
       <router-outlet />
     </section>

@@ -1,0 +1,28 @@
+.hero { display: flex; align-items: center; gap: 22px; padding: 26px; flex-wrap: wrap; background: linear-gradient(120deg, var(--accent-soft), transparent 60%), var(--surface); }
+.avatar { width: 78px; height: 78px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-size: 28px; font-weight: 800; color: var(--accent-ink); background: linear-gradient(135deg, var(--accent), var(--accent-hover)); box-shadow: 0 0 0 5px var(--accent-soft); }
+.who { flex: 1; min-width: 200px; display: grid; gap: 4px; justify-items: start; }
+.who h1 { font-size: 28px; }
+.who p { color: var(--muted); }
+.who .badge { color: var(--accent-hover); }
+.numbers { display: flex; gap: 10px; }
+.numbers a { min-width: 92px; padding: 12px; border-radius: 12px; background: var(--surface-2); text-align: center; display: grid; }
+.numbers a:hover { outline: 1px solid var(--accent); }
+.numbers strong { font-family: var(--display); font-size: 24px; }
+.numbers small { color: var(--muted); font-size: 12px; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.panel { padding: 22px; display: grid; gap: 14px; align-content: start; }
+.panel h2 { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.panel .btn { justify-self: start; }
+.meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.meter span { height: 4px; border-radius: 99px; background: var(--surface-3); }
+.meter[data-score='1'] span:nth-child(-n + 1) { background: var(--danger); }
+.meter[data-score='2'] span:nth-child(-n + 2) { background: #f5a524; }
+.meter[data-score='3'] span:nth-child(-n + 3) { background: #8bd450; }
+.meter[data-score='4'] span { background: var(--success); }
+.review { display: flex; gap: 14px; align-items: flex-start; padding: 14px; margin-bottom: 10px; }
+.thumb { width: 96px; flex-shrink: 0; }
+.thumb app-poster { aspect-ratio: 16 / 10; border-radius: 8px; }
+.body { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.body p { color: var(--muted); overflow-wrap: anywhere; }
+.row { display: flex; align-items: center; gap: 10px; small { color: var(--muted); } }
+@media (max-width: 900px) { .cols { grid-template-columns: 1fr; } .numbers { width: 100%; } .numbers a { flex: 1; } }

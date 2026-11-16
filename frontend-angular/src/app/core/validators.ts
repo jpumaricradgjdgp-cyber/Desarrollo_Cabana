@@ -35,6 +35,12 @@ export const videoPath: ValidatorFn = (control) => {
   return !v || /^[a-zA-Z0-9_/-]+\.[a-zA-Z0-9]+$/.test(v) ? null : { videoPath: true };
 };
 
+/** Enlace de YouTube (watch, youtu.be o embed). Vacío es válido: el tráiler es opcional. */
+export const youtubeUrl: ValidatorFn = (control) => {
+  const v: string = (control.value ?? '').trim();
+  return !v || /^https:\/\/(www\.)?(youtube\.com\/(watch\?v=|embed\/)|youtu\.be\/)[A-Za-z0-9_-]{11}([?&].*)?$/.test(v) ? null : { youtube: true };
+};
+
 /** Puntaje 0–4 para el medidor de seguridad de contraseña. */
 export function passwordScore(value: string): number {
   let score = 0;
@@ -58,6 +64,7 @@ export function fieldError(control: AbstractControl | null, label = 'Este campo'
   if (e['weak']) return 'Incluye al menos una letra y un número.';
   if (e['imageUrl']) return 'Usa una URL HTTPS o una ruta /assets/…';
   if (e['videoPath']) return 'Ejemplo válido: peliculas/mi-video.mp4';
+  if (e['youtube']) return 'Pega un enlace de YouTube, por ejemplo https://www.youtube.com/watch?v=…';
   if (e['pattern']) return 'El formato no es válido.';
   return 'Revisa este campo.';
 }

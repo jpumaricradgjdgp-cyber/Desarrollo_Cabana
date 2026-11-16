@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 
-const PUBLIC_AUTH = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh'];
+const PUBLIC_AUTH = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/forgot', '/api/auth/reset'];
 
 /**
  * Agrega "Authorization: Bearer" a las llamadas de la API, envía la cookie de renovación

@@ -22,6 +22,7 @@ form { display: grid; gap: 16px; }
 .meter[data-score='2'] span:nth-child(-n + 2) { background: #f5a524; }
 .meter[data-score='3'] span:nth-child(-n + 3) { background: #8bd450; }
 .meter[data-score='4'] span { background: var(--success); }
+.forgot { justify-self: end; margin-top: -6px; color: var(--accent-hover); font-size: 13px; font-weight: 700; }
 .switch { text-align: center; color: var(--muted); margin-top: 22px; }
 .switch a { color: var(--accent-hover); font-weight: 700; }
 .demo { margin-top: 22px; padding: 14px; border-radius: 12px; border: 1px dashed var(--line); display: grid; gap: 8px; }

@@ -36,3 +36,32 @@ export function clock(seconds: number): string {
   const h = Math.floor(seconds / 3600);
   return h ? `${h}:${m.toString().padStart(2, '0')}:${s}` : `${m}:${s}`;
 }
+
+/** ID de 11 caracteres de un enlace de YouTube, o null si el enlace no es válido. */
+export function youtubeId(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const match = url.trim().match(/^https:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})(?:[?&].*)?$/);
+  return match ? match[1]! : null;
+}
+
+/** Lee el fragmento (#access_token=…&type=recovery) que agrega Supabase al enlace del correo. */
+export function recoveryFromHash(hash: string): { token: string | null; error: string | null } {
+  const params = new URLSearchParams(hash.replace(/^#/, ''));
+  const error = params.get('error_description') ?? params.get('error');
+  const token = params.get('access_token');
+  return { token: token && (params.get('type') === 'recovery' || !params.get('type')) ? token : null, error: error ? error.replace(/\+/g, ' ') : null };
+}
+
+/** "hace 5 min", "ayer", "hace 3 días"… */
+export function timeAgo(iso: string | undefined, now = Date.now()): string {
+  if (!iso) return '';
+  const minutes = Math.round((now - new Date(iso).getTime()) / 60000);
+  if (minutes < 1) return 'hace un momento';
+  if (minutes < 60) return `hace ${minutes} min`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `hace ${hours} h`;
+  const days = Math.round(hours / 24);
+  if (days === 1) return 'ayer';
+  if (days < 30) return `hace ${days} días`;
+  return new Date(iso).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' });
+}
