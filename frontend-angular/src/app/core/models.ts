@@ -46,6 +46,7 @@ export interface AppConfig {
 export interface Progress {
   content: Content;
   seconds: number;
+  totalSeconds?: number | null;
   updatedAt?: string;
 }
 

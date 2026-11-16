@@ -1,5 +1,5 @@
 import { FormControl } from '@angular/forms';
-import { recoveryFromHash, timeAgo, youtubeId } from './format';
+import { progressPercent, recoveryFromHash, timeAgo, youtubeId } from './format';
 import { optionalText } from './query-param';
 import { youtubeUrl } from './validators';
 
@@ -29,6 +29,16 @@ describe('enlace de recuperación de Supabase', () => {
   });
   it('ignora tokens que no son de recuperación', () => {
     expect(recoveryFromHash('#access_token=abc&type=signup').token).toBeNull();
+  });
+});
+
+describe('Seguir viendo', () => {
+  const movie = { type: 'MOVIE', durationMinutes: 122, seasons: 0 } as never;
+  it('usa la duración real del tráiler cuando se conoce', () => {
+    expect(progressPercent(movie, 75, 150)).toBe(50);
+  });
+  it('sin duración real, estima con la duración del título', () => {
+    expect(progressPercent(movie, 61 * 60)).toBe(50);
   });
 });
 

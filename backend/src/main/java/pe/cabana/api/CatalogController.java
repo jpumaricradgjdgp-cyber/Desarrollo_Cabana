@@ -20,7 +20,7 @@ public class CatalogController {
   @PutMapping("/me/list/{id}") void save(@AuthenticationPrincipal Jwt j,@PathVariable UUID id){catalog.save(user(j),id);}
   @DeleteMapping("/me/list/{id}") void unsave(@AuthenticationPrincipal Jwt j,@PathVariable UUID id){catalog.unsave(user(j),id);}
   @GetMapping("/me/progress") List<ProgressView> progress(@AuthenticationPrincipal Jwt j){return catalog.progress(user(j));}
-  @PutMapping("/me/progress/{id}") void progress(@AuthenticationPrincipal Jwt j,@PathVariable UUID id,@Valid @RequestBody Position p){catalog.progress(user(j),id,p.seconds());}
+  @PutMapping("/me/progress/{id}") void progress(@AuthenticationPrincipal Jwt j,@PathVariable UUID id,@Valid @RequestBody Position p){catalog.progress(user(j),id,p.seconds(),p.total());}
   @GetMapping("/playback/{id}") PlaybackService.Playback play(@PathVariable UUID id){return playback.play(id);}
   @GetMapping("/admin/catalog") List<AdminContentView> adminCatalog(){return catalog.adminCatalog();}
   @PostMapping("/admin/catalog") ContentView create(@Valid @RequestBody ContentInput p){return catalog.put(null,p);}

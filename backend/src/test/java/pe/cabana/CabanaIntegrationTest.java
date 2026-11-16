@@ -166,8 +166,10 @@ class CabanaIntegrationTest {
     mvc.perform(put("/api/me/list/"+first).header("Authorization","Bearer "+token)).andExpect(status().isOk());
     mvc.perform(put("/api/me/progress/"+first).header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content("{\"seconds\":10}")).andExpect(status().isOk());
     Thread.sleep(5);
-    mvc.perform(put("/api/me/progress/"+second).header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content("{\"seconds\":20}")).andExpect(status().isOk());
-    mvc.perform(get("/api/me/progress").header("Authorization","Bearer "+token)).andExpect(jsonPath("$[0].content.id").value(second)).andExpect(jsonPath("$[0].updatedAt").isNotEmpty());
+    mvc.perform(put("/api/me/progress/"+second).header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content("{\"seconds\":200,\"total\":150}")).andExpect(status().isBadRequest());
+    mvc.perform(put("/api/me/progress/"+second).header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content("{\"seconds\":20,\"total\":150}")).andExpect(status().isOk());
+    mvc.perform(get("/api/me/progress").header("Authorization","Bearer "+token)).andExpect(jsonPath("$[0].content.id").value(second))
+      .andExpect(jsonPath("$[0].updatedAt").isNotEmpty()).andExpect(jsonPath("$[0].totalSeconds").value(150)).andExpect(jsonPath("$[1].totalSeconds").isEmpty());
     mvc.perform(get("/api/me/recommendations").header("Authorization","Bearer "+token)).andExpect(status().isOk())
       .andExpect(jsonPath("$[0].content.genre").value("Terror")).andExpect(jsonPath("$[0].reason").value("Porque te gusta Terror"))
       .andExpect(jsonPath("$[?(@.content.id=='"+first+"')]").isEmpty());

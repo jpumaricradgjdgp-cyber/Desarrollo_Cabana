@@ -24,7 +24,7 @@ import { Poster } from '../../shared/poster';
             <a class="thumb" [routerLink]="['/ver', p.content.id]" [attr.aria-label]="'Seguir viendo ' + p.content.title">
               <app-poster [content]="p.content" />
               <span class="play"><app-icon name="play" [size]="16" /></span>
-              <span class="bar"><span [style.width.%]="Math.max(3, percent(p.content, p.seconds))"></span></span>
+              <span class="bar"><span [style.width.%]="Math.max(3, percent(p.content, p.seconds, p.totalSeconds))"></span></span>
             </a>
             <div class="info">
               <a [routerLink]="['/titulo', p.content.id]"><strong>{{ p.content.title }}</strong></a>

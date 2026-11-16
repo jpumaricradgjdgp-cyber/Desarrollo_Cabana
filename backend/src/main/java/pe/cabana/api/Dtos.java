@@ -33,9 +33,10 @@ public class Dtos {
   public record ProfileStats(long saved,long watched,long reviews) {}
 
   // ----- Usuario -----
-  public record Position(@Min(0) @Max(86400) long seconds) {}
-  public record ProgressView(ContentView content,long seconds,Instant updatedAt) {
-    public static ProgressView of(WatchProgress p){return new ProgressView(ContentView.of(p.content),p.seconds,p.updatedAt);}
+  /** total es opcional: la duración de lo reproducido en segundos. */
+  public record Position(@Min(0) @Max(86400) long seconds,@Min(1) @Max(86400) Integer total) {}
+  public record ProgressView(ContentView content,long seconds,Integer totalSeconds,Instant updatedAt) {
+    public static ProgressView of(WatchProgress p){return new ProgressView(ContentView.of(p.content),p.seconds,p.totalSeconds,p.updatedAt);}
   }
   public record Recommendation(ContentView content,String reason) {}
 

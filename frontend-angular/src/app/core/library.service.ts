@@ -2,6 +2,7 @@ import { Injectable, computed, effect, inject, signal, untracked } from '@angula
 import { firstValueFrom } from 'rxjs';
 import { ApiService, errorMessage } from './api.service';
 import { AuthService } from './auth.service';
+import { progressPercent } from './format';
 import { Content, Progress, Rating, Recommendation } from './models';
 import { ToastService } from './toast.service';
 
@@ -21,6 +22,10 @@ export class LibraryService {
   readonly recommendations = signal<Recommendation[]>([]);
   readonly savedIds = computed(() => new Set(this.saved().map((c) => c.id)));
   readonly progressById = computed(() => new Map(this.progress().map((p) => [p.content.id, p.seconds])));
+  /** % visto por título, con la duración real cuando se conoce. */
+  readonly percentById = computed(() => new Map(this.progress().map((p) => [p.content.id, progressPercent(p.content, p.seconds, p.totalSeconds)])));
+  /** «Seguir viendo»: lo empezado y no terminado (menos del 95 %), lo más reciente primero. */
+  readonly keepWatching = computed(() => this.progress().filter((p) => progressPercent(p.content, p.seconds, p.totalSeconds) < 95));
 
   constructor() {
     effect(() => {
@@ -96,7 +101,10 @@ export class LibraryService {
     }
   }
 
-  updateProgress(content: Content, seconds: number): void {
-    this.progress.update((list) => [{ content, seconds, updatedAt: new Date().toISOString() }, ...list.filter((p) => p.content.id !== content.id)]);
+  updateProgress(content: Content, seconds: number, totalSeconds?: number): void {
+    this.progress.update((list) => [
+      { content, seconds, totalSeconds: totalSeconds ?? list.find((p) => p.content.id === content.id)?.totalSeconds, updatedAt: new Date().toISOString() },
+      ...list.filter((p) => p.content.id !== content.id),
+    ]);
   }
 }

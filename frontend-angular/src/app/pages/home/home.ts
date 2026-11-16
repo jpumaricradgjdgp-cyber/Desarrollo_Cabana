@@ -4,7 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { CatalogService } from '../../core/catalog.service';
 import { ConfigService } from '../../core/config.service';
-import { hasImage, hue, lengthLabel, progressPercent, typeLabel } from '../../core/format';
+import { clock, hasImage, hue, lengthLabel, progressPercent, typeLabel } from '../../core/format';
 import { LibraryService } from '../../core/library.service';
 import { Content } from '../../core/models';
 import { ThemeService } from '../../core/theme.service';
@@ -35,6 +35,7 @@ export class HomePage {
   protected readonly hasImage = hasImage;
   protected readonly hue = hue;
   protected readonly percent = progressPercent;
+  protected readonly clock = clock;
   protected readonly Math = Math;
 
   protected readonly current = computed(() => this.catalog.featured()[this.slide() % Math.max(1, this.catalog.featured().length)]);
@@ -47,7 +48,7 @@ export class HomePage {
       .slice(0, 10);
   });
   protected readonly continueWatching = computed(() =>
-    this.library.progress().filter((p) => progressPercent(p.content, p.seconds) < 98).slice(0, 10),
+    this.library.keepWatching().slice(0, 10),
   );
   protected readonly showHalloween = computed(
     () => this.config.config().halloweenSeason && this.theme.theme() !== 'halloween' && !this.halloweenDismissed(),

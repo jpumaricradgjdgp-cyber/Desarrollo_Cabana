@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { lengthLabel, progressPercent } from '../core/format';
+import { lengthLabel } from '../core/format';
 import { LibraryService } from '../core/library.service';
 import { Content } from '../core/models';
 import { Icon } from './icon';
@@ -64,7 +64,7 @@ export class ContentCard {
   protected readonly rating = computed(() => this.library.ratings().get(this.content().id));
   protected readonly length = computed(() => lengthLabel(this.content()));
   protected readonly percent = computed(() => {
-    const seconds = this.library.progressById().get(this.content().id);
-    return seconds ? Math.max(3, progressPercent(this.content(), seconds)) : 0;
+    const percent = this.library.percentById().get(this.content().id);
+    return percent && percent < 95 ? Math.max(3, percent) : 0;
   });
 }

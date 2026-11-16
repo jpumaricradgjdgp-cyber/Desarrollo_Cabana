@@ -24,9 +24,12 @@ export function hue(text: string): number {
   return h;
 }
 
-/** Porcentaje visto, estimando la duración en segundos (película o capítulo). */
-export function progressPercent(c: Content, seconds: number): number {
-  const total = Math.max(60, c.durationMinutes * 60);
+/**
+ * Porcentaje visto. Usa la duración real de lo reproducido (tráiler o video) cuando se conoce;
+ * si no, la estima con la duración del título.
+ */
+export function progressPercent(c: Content, seconds: number, totalSeconds?: number | null): number {
+  const total = totalSeconds && totalSeconds > 0 ? totalSeconds : Math.max(60, c.durationMinutes * 60);
   return Math.min(100, Math.round((seconds / total) * 100));
 }
 

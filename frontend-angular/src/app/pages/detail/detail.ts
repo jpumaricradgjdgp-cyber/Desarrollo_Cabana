@@ -62,7 +62,8 @@ export class DetailPage {
   protected readonly resumeAt = computed(() => this.library.progressById().get(this.id()) ?? 0);
   protected readonly percent = computed(() => {
     const c = this.content();
-    return c && this.resumeAt() ? progressPercent(c, this.resumeAt()) : 0;
+    const p = this.library.progress().find((x) => x.content.id === this.id());
+    return c && p && p.seconds ? progressPercent(c, p.seconds, p.totalSeconds) : 0;
   });
   protected readonly related = computed(() => {
     const c = this.content();

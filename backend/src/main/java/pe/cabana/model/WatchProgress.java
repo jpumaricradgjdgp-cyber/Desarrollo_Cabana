@@ -6,6 +6,8 @@ public class WatchProgress {
   @Column(name="user_id",nullable=false) public java.util.UUID userId;
   @ManyToOne(optional=false,fetch=FetchType.LAZY) @JoinColumn(name="content_id") public Content content;
   @Column(nullable=false) public long seconds;
+  /** Duración real de lo que se reprodujo (tráiler o video); permite calcular el % visto. */
+  @Column(name="total_seconds") public Integer totalSeconds;
   /** Última vez que se vio: ordena el historial. */
   @Column(name="updated_at",nullable=false) public java.time.Instant updatedAt=java.time.Instant.now();
 }

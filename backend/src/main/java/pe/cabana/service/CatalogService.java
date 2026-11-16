@@ -26,9 +26,12 @@ public class CatalogService {
 
   /** Historial: lo último que se vio primero. */
   public List<ProgressView> progress(UUID user){return progress.findByUserIdOrderByUpdatedAtDesc(user).stream().map(ProgressView::of).toList();}
-  @Transactional public void progress(UUID user,UUID id,long seconds){
+  @Transactional public void progress(UUID user,UUID id,long seconds,Integer total){
+    if(total!=null && seconds>total) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"El progreso no puede superar la duración");
     var c=require(id);var p=progress.findByUserIdAndContentId(user,id).orElseGet(WatchProgress::new);
-    p.userId=user;p.content=c;p.seconds=seconds;p.updatedAt=Instant.now();progress.save(p);
+    p.userId=user;p.content=c;p.seconds=seconds;p.updatedAt=Instant.now();
+    if(total!=null) p.totalSeconds=total;
+    progress.save(p);
   }
   @Transactional public void forget(UUID user,UUID id){progress.findByUserIdAndContentId(user,id).ifPresent(progress::delete);}
 

@@ -57,8 +57,11 @@ export class ApiService {
   progress() {
     return this.http.get<Progress[]>('/api/me/progress');
   }
-  saveProgress(id: string, seconds: number) {
-    return this.http.put<void>(`/api/me/progress/${id}`, { seconds: Math.max(0, Math.floor(seconds)) });
+  /** total: duración de lo reproducido en segundos (tráiler o video), si se conoce. */
+  saveProgress(id: string, seconds: number, total?: number) {
+    const body: { seconds: number; total?: number } = { seconds: Math.max(0, Math.floor(seconds)) };
+    if (total && total >= 1) body.total = Math.min(86400, Math.round(total));
+    return this.http.put<void>(`/api/me/progress/${id}`, body);
   }
   forgetProgress(id: string) {
     return this.http.delete<void>(`/api/me/progress/${id}`);

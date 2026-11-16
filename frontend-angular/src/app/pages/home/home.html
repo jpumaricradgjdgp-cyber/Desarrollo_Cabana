@@ -77,20 +77,20 @@
       </section>
     }
 
-    <!-- Continuar viendo -->
+    <!-- Seguir viendo: películas y tráileres empezados y no terminados -->
     @if (continueWatching().length) {
       <section class="section">
-        <div class="section-head"><h2><app-icon name="clock" />Continuar viendo</h2></div>
+        <div class="section-head"><h2><app-icon name="clock" />Seguir viendo</h2><a routerLink="/historial">Historial <app-icon name="chevron-right" [size]="16" /></a></div>
         <app-scroll-row>
           @for (p of continueWatching(); track p.content.id) {
             <a class="resume" [routerLink]="['/ver', p.content.id]">
               <div class="resume-thumb">
                 <app-poster [content]="p.content" />
                 <span class="resume-play"><app-icon name="play" [size]="16" /></span>
-                <span class="bar"><span [style.width.%]="Math.max(3, percent(p.content, p.seconds))"></span></span>
+                <span class="bar"><span [style.width.%]="Math.max(3, percent(p.content, p.seconds, p.totalSeconds))"></span></span>
               </div>
               <strong>{{ p.content.title }}</strong>
-              <small>{{ percent(p.content, p.seconds) }}% visto</small>
+              <small>{{ percent(p.content, p.seconds, p.totalSeconds) }}% visto · te quedaste en {{ clock(p.seconds) }}</small>
             </a>
           }
         </app-scroll-row>
