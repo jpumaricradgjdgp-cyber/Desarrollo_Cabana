@@ -1,28 +1,40 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, input, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, computed, inject, input, signal, viewChild } from '@angular/core';
 import { Location } from '@angular/common';
+import { DomSanitizer } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ApiService, errorMessage } from '../../core/api.service';
 import { CatalogService } from '../../core/catalog.service';
-import { clock } from '../../core/format';
+import { clock, youtubeId } from '../../core/format';
 import { LibraryService } from '../../core/library.service';
 import { Content, Playback } from '../../core/models';
 import { Icon } from '../../shared/icon';
 
-/** Reproductor a pantalla completa. Reanuda donde quedó y guarda el progreso cada 10 s. */
+/**
+ * Reproductor a pantalla completa.
+ * - Si el título tiene un video real (Supabase Storage), lo reproduce, reanuda y guarda el progreso cada 10 s.
+ * - Si no lo tiene (o es el video de muestra del modo demo) y hay tráiler, reproduce el tráiler oficial de YouTube.
+ */
 @Component({
   selector: 'app-player',
   imports: [Icon, RouterLink],
   template: `
-    <div class="player">
+    <div class="player" [class.with-trailer]="trailer()">
       <div class="top">
         <button class="icon-btn round" type="button" aria-label="Volver" (click)="back()"><app-icon name="arrow-left" /></button>
         <div>
-          <small>Estás viendo</small>
+          <small>{{ trailer() ? 'Tráiler oficial' : 'Estás viendo' }}</small>
           <strong>{{ content()?.title ?? 'Cargando…' }}</strong>
         </div>
+        @if (trailer() && watchUrl()) {
+          <a class="yt-link" [href]="watchUrl()" target="_blank" rel="noopener">¿No se reproduce? Ver en YouTube ↗</a>
+        }
       </div>
-      @if (error(); as e) {
+      @if (trailer(); as url) {
+        <!-- YouTube exige identificar el sitio que inserta el video (error 153 si no llega el Referer). -->
+        <iframe class="yt" [src]="url" title="Tráiler" referrerpolicy="strict-origin-when-cross-origin"
+          allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>
+      } @else if (error(); as e) {
         <div class="state">
           <app-icon name="info" [size]="40" />
           <h2>No se pudo reproducir</h2>
@@ -45,6 +57,12 @@ import { Icon } from '../../shared/icon';
   styles: `
     .player { position: fixed; inset: 0; z-index: 80; background: #000; display: grid; place-items: center; color: #fff; }
     video { width: 100%; height: 100%; max-height: 100vh; background: #000; }
+    .yt { width: 100%; height: 100%; border: 0; background: #000; }
+    /* Con tráiler, la barra va arriba y no encima del video, para no tapar los controles de YouTube. */
+    .player.with-trailer { grid-template-rows: auto 1fr; place-items: stretch; }
+    .player.with-trailer .top { position: static; background: #000; }
+    .yt-link { margin-left: auto; padding: 6px 12px; border-radius: 8px; border: 1px solid #fff3; color: #fffc; font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .yt-link:hover { color: #fff; }
     .top { position: absolute; top: 0; left: 0; right: 0; z-index: 2; display: flex; align-items: center; gap: 14px; padding: 18px 24px; background: linear-gradient(#000c, transparent); pointer-events: none; }
     .top > * { pointer-events: auto; }
     .top small { display: block; color: #fff9; font-size: 12px; }
@@ -65,15 +83,26 @@ export class PlayerPage {
   private readonly catalog = inject(CatalogService);
   private readonly library = inject(LibraryService);
   private readonly location = inject(Location);
+  private readonly sanitizer = inject(DomSanitizer);
   private readonly video = viewChild<ElementRef<HTMLVideoElement>>('video');
 
   readonly id = input.required<string>();
   protected readonly content = signal<Content | null>(null);
   protected readonly playback = signal<Playback | null>(null);
   protected readonly error = signal<string | null>(null);
+  protected readonly useTrailer = signal(false);
   protected readonly resumedFrom = signal(0);
   protected readonly clock = clock;
   private lastSaved = -1;
+
+  private readonly trailerId = computed(() => youtubeId(this.content()?.trailerUrl));
+  protected readonly trailer = computed(() => {
+    const id = this.trailerId();
+    if (!this.useTrailer() || !id) return null;
+    const origin = encodeURIComponent(window.location.origin);
+    return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&origin=${origin}`);
+  });
+  protected readonly watchUrl = computed(() => (this.trailerId() ? `https://www.youtube.com/watch?v=${this.trailerId()}` : null));
 
   constructor() {
     const timer = setInterval(() => this.save(), 10_000);
@@ -84,15 +113,24 @@ export class PlayerPage {
   }
 
   async ngOnInit(): Promise<void> {
+    let content: Content;
     try {
-      const [content, playback] = await Promise.all([
-        this.catalog.byId(this.id()) ?? firstValueFrom(this.api.content(this.id())),
-        firstValueFrom(this.api.playback(this.id())),
-      ]);
+      content = this.catalog.byId(this.id()) ?? (await firstValueFrom(this.api.content(this.id())));
       this.content.set(content);
-      this.playback.set(playback);
     } catch (e) {
-      this.error.set(errorMessage(e, 'El video no está disponible.'));
+      this.error.set(errorMessage(e, 'El título no está disponible.'));
+      return;
+    }
+    const hasTrailer = !!youtubeId(content.trailerUrl);
+    try {
+      const playback = await firstValueFrom(this.api.playback(this.id()));
+      // El video del modo demostración es una muestra genérica: si hay tráiler oficial, se prefiere el tráiler.
+      if (playback.demo && hasTrailer) this.useTrailer.set(true);
+      else this.playback.set(playback);
+    } catch (e) {
+      // Sin video real en Supabase (404) o sin acceso al almacenamiento: se muestra el tráiler si existe.
+      if (hasTrailer) this.useTrailer.set(true);
+      else this.error.set(errorMessage(e, 'El video no está disponible.'));
     }
   }
 
