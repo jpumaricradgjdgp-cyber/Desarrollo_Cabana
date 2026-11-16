@@ -9,8 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 @Service @Transactional(readOnly=true)
 public class CatalogService {
-  private final GenreRepository genres; private final ContentRepository contents; private final SavedRepository saved; private final ProgressRepository progress;
-  public CatalogService(ContentRepository c,SavedRepository s,ProgressRepository p,GenreRepository g){contents=c;saved=s;progress=p;genres=g;}
+  private final GenreRepository genres; private final ContentRepository contents; private final SavedRepository saved; private final ProgressRepository progress; private final ReviewRepository reviews;
+  public CatalogService(ContentRepository c,SavedRepository s,ProgressRepository p,GenreRepository g,ReviewRepository r){contents=c;saved=s;progress=p;genres=g;reviews=r;}
   public List<ContentView> search(String q,String type,String genre){return contents.search(q,type,genre).stream().map(ContentView::of).toList();}
   public List<AdminContentView> adminCatalog(){return contents.search("","","").stream().map(AdminContentView::of).toList();}
   public List<String> genres(){return genres.findAllByOrderByNameAsc().stream().map(Genre::getName).toList();}
@@ -27,5 +27,5 @@ public class CatalogService {
     var c=id==null ? new Content() : require(id);c.title=input.title();c.description=input.description();c.type=input.type();c.releaseYear=input.releaseYear();c.durationMinutes=input.durationMinutes();c.seasons=input.seasons();c.genre=genres.findByName(input.genre().strip()).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST,"Selecciona un género del catálogo"));c.imageUrl=input.imageUrl();c.videoPath=video;c.featured=input.featured();c.ageRating=input.ageRating();return ContentView.of(contents.save(c));
   }
   private boolean safeImage(String value){ if(value.startsWith("/assets/") && !value.contains(".."))return true;try{var u=java.net.URI.create(value);return "https".equals(u.getScheme())&&u.getHost()!=null;}catch(Exception e){return false;}}
-  @Transactional public void delete(UUID id){require(id);saved.deleteByContentId(id);progress.deleteByContentId(id);contents.deleteById(id);}
+  @Transactional public void delete(UUID id){require(id);saved.deleteByContentId(id);progress.deleteByContentId(id);reviews.deleteByContentId(id);contents.deleteById(id);}
 }

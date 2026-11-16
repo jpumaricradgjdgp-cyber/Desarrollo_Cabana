@@ -13,7 +13,7 @@ public class AuthController {
   private final AuthService auth; private final boolean secure; private final String origin;
   public AuthController(AuthService auth,@Value("${cabana.secure-cookies}") boolean secure,@Value("${cabana.allowed-origin}") String origin){this.auth=auth;this.secure=secure;this.origin=origin;}
   // Refresh cookies are HttpOnly. Origin checks protect cookie-based mutations from CSRF.
-  private void checkOrigin(String supplied){ if(supplied!=null && !origin.equals(supplied)) throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN,"Origen no permitido"); }
+  private void checkOrigin(String supplied){ if(supplied!=null && java.util.Arrays.stream(origin.split(",")).map(String::strip).noneMatch(supplied::equals)) throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN,"Origen no permitido"); }
   @PostMapping("/login") ResponseEntity<?> login(@Valid @RequestBody Credentials body,@RequestHeader(value="Origin",required=false) String o){checkOrigin(o);return response(auth.login(body));}
   @PostMapping("/register") ResponseEntity<?> register(@Valid @RequestBody Registration body,@RequestHeader(value="Origin",required=false) String o){checkOrigin(o);return response(auth.register(body));}
   @PostMapping("/refresh") ResponseEntity<?> refresh(@CookieValue(value="cabana_refresh",required=false) String cookie,@RequestHeader(value="Origin",required=false) String o){checkOrigin(o);return response(auth.refresh(cookie));}

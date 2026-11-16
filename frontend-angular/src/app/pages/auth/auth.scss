@@ -1,0 +1,30 @@
+:host { display: block; }
+.auth { display: grid; grid-template-columns: 1.05fr 1fr; min-height: calc(100vh - 180px); border-radius: 22px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); margin-bottom: 24px; }
+.art { position: relative; display: flex; flex-direction: column; justify-content: flex-end; padding: 40px; color: #fff; background: url('/assets/cabin-blue.jpg') center / cover; isolation: isolate; }
+.art::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, #060a14f2, #060a1440 70%); }
+.art img { width: 150px; mix-blend-mode: screen; margin-bottom: auto; }
+.art h2 { font-size: 30px; line-height: 1.15; margin-bottom: 10px; }
+.art p { color: #ffffffc0; max-width: 360px; }
+.perks { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 10px; }
+.perks li { display: flex; align-items: center; gap: 10px; color: #ffffffd0; }
+.perks app-icon { color: var(--accent-hover); }
+.panel { padding: 48px clamp(24px, 5vw, 64px); display: flex; flex-direction: column; justify-content: center; }
+.panel h1 { font-size: 30px; font-weight: 800; }
+.sub { color: var(--muted); margin: 6px 0 26px; }
+form { display: grid; gap: 16px; }
+.pwd { position: relative; }
+.pwd .input { padding-right: 46px; }
+.eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; display: grid; place-items: center; color: var(--muted); border-radius: 8px; }
+.eye:hover { color: var(--text); }
+.meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 2px; }
+.meter span { height: 4px; border-radius: 99px; background: var(--surface-3); transition: background .2s; }
+.meter[data-score='1'] span:nth-child(-n + 1) { background: var(--danger); }
+.meter[data-score='2'] span:nth-child(-n + 2) { background: #f5a524; }
+.meter[data-score='3'] span:nth-child(-n + 3) { background: #8bd450; }
+.meter[data-score='4'] span { background: var(--success); }
+.switch { text-align: center; color: var(--muted); margin-top: 22px; }
+.switch a { color: var(--accent-hover); font-weight: 700; }
+.demo { margin-top: 22px; padding: 14px; border-radius: 12px; border: 1px dashed var(--line); display: grid; gap: 8px; }
+.demo p { font-size: 12px; color: var(--muted); }
+.demo div { display: flex; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 900px) { .auth { grid-template-columns: 1fr; } .art { min-height: 220px; padding: 24px; } .art img { width: 110px; } .perks { display: none; } .panel { padding: 28px 20px; } }

@@ -16,7 +16,8 @@ echo Abre http://localhost:%PORT% en tu navegador cuando termine el inicio.
 if exist "%~dp0cabana.jar" (
   java -jar "%~dp0cabana.jar"
 ) else (
-  echo Iniciando desde el codigo fuente. La primera vez descarga Maven y las dependencias.
+  echo Iniciando desde el codigo fuente. La primera vez descarga Maven, Angular y las dependencias.
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\compilar-frontend.ps1" || exit /b 1
   cd /d "%~dp0backend"
   call mvnw.cmd spring-boot:run
 )

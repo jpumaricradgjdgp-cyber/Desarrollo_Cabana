@@ -1,0 +1,149 @@
+<section class="page">
+  <p class="welcome">
+    @if (auth.user(); as user) { Hola, <strong>{{ user.name }}</strong>. ¿Qué vemos hoy? } @else { Bienvenido a tu próximo lugar favorito. }
+  </p>
+
+  @if (showHalloween()) {
+    <aside class="season">
+      <img src="assets/ghost.png" alt="" />
+      <div>
+        <small>OCTUBRE EN CABAÑA</small>
+        <h3>¿Una noche de terror en la cabaña?</h3>
+        <p>Prueba el ambiente de Halloween, solo si te apetece.</p>
+      </div>
+      <button class="btn btn-primary halloween-btn" type="button" (click)="theme.theme.set('halloween')">Activar modo Halloween</button>
+      <button class="close" type="button" aria-label="Cerrar anuncio" (click)="halloweenDismissed.set(true)"><app-icon name="x" [size]="18" /></button>
+    </aside>
+  }
+
+  @if (catalog.error(); as error) {
+    <div class="empty card">
+      <span class="icon-bubble"><app-icon name="info" [size]="28" /></span>
+      <h3>No pudimos cargar el catálogo</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" type="button" (click)="catalog.reload()">Reintentar</button>
+    </div>
+  } @else if (!catalog.loaded()) {
+    <div class="skeleton hero-skeleton"></div>
+    <div class="grid section">
+      @for (n of [1, 2, 3, 4, 5, 6]; track n) { <div class="skeleton" style="aspect-ratio: 16/10"></div> }
+    </div>
+  } @else {
+    <!-- Carrusel destacado -->
+    @if (current(); as item) {
+      <section class="hero" aria-roledescription="carrusel" aria-label="Destacados">
+        @for (f of catalog.featured(); track f.id; let i = $index) {
+          <div class="hero-bg" [class.visible]="i === slide() % catalog.featured().length">
+            @if (hasImage(f)) {
+              <img [src]="f.imageUrl" alt="" />
+            } @else {
+              <div class="hero-gen" [style.--h]="hue(f.title)"></div>
+            }
+          </div>
+        }
+        <div class="hero-content">
+          <small class="kicker">{{ typeLabel(item.type) | uppercase }} DESTACADA</small>
+          <h1>{{ item.title }}</h1>
+          <p class="meta">
+            <span>{{ item.releaseYear }}</span>
+            <span class="badge">{{ item.ageRating }}</span>
+            <span>{{ lengthLabel(item) }}</span>
+            <span>{{ item.genre }}</span>
+            @if (library.ratings().get(item.id); as r) {
+              <span class="gold"><app-icon name="star" [size]="14" /> {{ r.average.toFixed(1) }}</span>
+            }
+          </p>
+          <p class="desc">{{ item.description }}</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary btn-lg" type="button" (click)="play(item)"><app-icon name="play" />Ver ahora</button>
+            <a class="btn btn-glass btn-lg" [routerLink]="['/titulo', item.id]"><app-icon name="info" />Más info</a>
+            <button class="btn btn-glass btn-lg icon-only" type="button" (click)="library.toggle(item)"
+              [attr.aria-label]="library.isSaved(item.id) ? 'Quitar de Mi lista' : 'Agregar a Mi lista'">
+              <app-icon [name]="library.isSaved(item.id) ? 'check' : 'plus'" />
+            </button>
+          </div>
+        </div>
+        @if (catalog.featured().length > 1) {
+          <div class="hero-nav">
+            <div class="dots">
+              @for (f of catalog.featured(); track f.id; let i = $index) {
+                <button type="button" [class.on]="i === slide() % catalog.featured().length" (click)="slide.set(i)" [attr.aria-label]="'Ver ' + f.title"></button>
+              }
+            </div>
+            <button class="icon-btn round" type="button" aria-label="Anterior" (click)="next(-1)"><app-icon name="chevron-left" /></button>
+            <button class="icon-btn round" type="button" aria-label="Siguiente" (click)="next()"><app-icon name="chevron-right" /></button>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- Continuar viendo -->
+    @if (continueWatching().length) {
+      <section class="section">
+        <div class="section-head"><h2><app-icon name="clock" />Continuar viendo</h2></div>
+        <app-scroll-row>
+          @for (p of continueWatching(); track p.content.id) {
+            <a class="resume" [routerLink]="['/ver', p.content.id]">
+              <div class="resume-thumb">
+                <app-poster [content]="p.content" />
+                <span class="resume-play"><app-icon name="play" [size]="16" /></span>
+                <span class="bar"><span [style.width.%]="Math.max(3, percent(p.content, p.seconds))"></span></span>
+              </div>
+              <strong>{{ p.content.title }}</strong>
+              <small>{{ percent(p.content, p.seconds) }}% visto</small>
+            </a>
+          }
+        </app-scroll-row>
+      </section>
+    }
+
+    <!-- Lo más reciente -->
+    <section class="section">
+      <div class="section-head"><h2><app-icon name="sparkles" />Lo más reciente</h2><span class="hint">Por año de estreno</span></div>
+      <div class="recent">
+        @for (item of catalog.recent().slice(0, 3); track item.id; let i = $index) {
+          <a class="recent-item card" [routerLink]="['/titulo', item.id]">
+            <span class="num">0{{ i + 1 }}</span>
+            <app-poster [content]="item" />
+            <span class="recent-info"><strong>{{ item.title }}</strong><small>{{ item.releaseYear }} · {{ item.genre }} · {{ lengthLabel(item) }}</small></span>
+            <app-icon name="chevron-right" />
+          </a>
+        }
+      </div>
+    </section>
+
+    @if (topRated().length) {
+      <section class="section">
+        <div class="section-head"><h2><app-icon name="star" />Mejor calificadas</h2><span class="hint">Según las reseñas de la comunidad</span></div>
+        <app-scroll-row>
+          @for (item of topRated(); track item.id) { <app-content-card [content]="item" /> }
+        </app-scroll-row>
+      </section>
+    }
+
+    <section class="section">
+      <div class="section-head"><h2><app-icon name="film" />Películas</h2><a routerLink="/peliculas">Ver todas <app-icon name="chevron-right" [size]="16" /></a></div>
+      <app-scroll-row>
+        @for (item of catalog.movies(); track item.id) { <app-content-card [content]="item" /> }
+      </app-scroll-row>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2><app-icon name="tv" />Series</h2><a routerLink="/series">Ver todas <app-icon name="chevron-right" [size]="16" /></a></div>
+      <app-scroll-row>
+        @for (item of catalog.series(); track item.id) { <app-content-card [content]="item" /> }
+      </app-scroll-row>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2><app-icon name="grid" />Géneros</h2><a routerLink="/generos">Explorar <app-icon name="chevron-right" [size]="16" /></a></div>
+      <div class="genres">
+        @for (g of catalog.genres(); track g.name) {
+          <a class="genre" [routerLink]="['/generos']" [queryParams]="{ g: g.name }" [style.--h]="hue(g.name)">
+            <strong>{{ g.name }}</strong><small>{{ g.count }} {{ g.count === 1 ? 'título' : 'títulos' }}</small>
+          </a>
+        }
+      </div>
+    </section>
+  }
+</section>

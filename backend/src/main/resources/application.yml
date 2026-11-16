@@ -14,5 +14,10 @@ server:
   error:
     include-message: never
 cabana:
-  allowed-origin: ${FRONTEND_ORIGIN:http://localhost:8080}
+  allowed-origin: ${FRONTEND_ORIGIN:http://localhost:8080,http://localhost:4200}
   secure-cookies: false
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha

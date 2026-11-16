@@ -7,4 +7,7 @@ public interface ContentRepository extends JpaRepository<Content,UUID> {
   @Query("select c from Content c join fetch c.genre g where (:q = '' or lower(c.title) like lower(concat('%', :q, '%'))) and (:type = '' or c.type = :type) and (:genre = '' or g.name = :genre) order by c.featured desc, c.title asc")
   List<Content> search(@Param("q") String q,@Param("type") String type,@Param("genre") String genre);
   @Query("select distinct g.name from Content c join c.genre g order by g.name") List<String> genres();
+  long countByType(String type);
+  @Query("select g.name, count(c) from Content c join c.genre g group by g.name order by count(c) desc, g.name asc")
+  List<Object[]> countByGenre();
 }

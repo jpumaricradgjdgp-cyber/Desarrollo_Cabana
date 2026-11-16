@@ -1,0 +1,171 @@
+<div class="toolbar">
+  <label class="search">
+    <app-icon name="search" [size]="18" /><span class="sr-only">Buscar</span>
+    <input class="input" placeholder="Buscar por título o género" [value]="q()" (input)="q.set($any($event.target).value); page.set(1)" />
+  </label>
+  <div class="seg" role="group" aria-label="Tipo">
+    <button type="button" [class.on]="type() === ''" (click)="type.set(''); page.set(1)">Todo</button>
+    <button type="button" [class.on]="type() === 'MOVIE'" (click)="type.set('MOVIE'); page.set(1)">Películas</button>
+    <button type="button" [class.on]="type() === 'SERIES'" (click)="type.set('SERIES'); page.set(1)">Series</button>
+  </div>
+  <button class="btn btn-primary" type="button" (click)="open('new')"><app-icon name="plus" [size]="18" />Nuevo contenido</button>
+</div>
+
+<div class="card table-wrap">
+  <table class="table">
+    <thead>
+      <tr><th>Título</th><th>Tipo</th><th>Género</th><th>Año</th><th>Duración</th><th>Calificación</th><th>Destacado</th><th class="right">Acciones</th></tr>
+    </thead>
+    <tbody>
+      @for (c of visible(); track c.id) {
+        <tr>
+          <td>
+            <a class="title-cell" [routerLink]="['/titulo', c.id]">
+              <app-poster class="thumb" [content]="c" />
+              <span><strong>{{ c.title }}</strong><small class="badge">{{ c.ageRating }}</small></span>
+            </a>
+          </td>
+          <td><span class="pill">{{ c.type === 'MOVIE' ? 'Película' : 'Serie' }}</span></td>
+          <td>{{ c.genre }}</td>
+          <td>{{ c.releaseYear }}</td>
+          <td class="muted">{{ lengthLabel(c) }}</td>
+          <td>
+            @if (library.ratings().get(c.id); as r) {
+              <span class="rating"><app-rating-stars [value]="r.average" [size]="12" /><small>{{ r.count }}</small></span>
+            } @else { <span class="muted">—</span> }
+          </td>
+          <td>
+            <button class="star-toggle" type="button" [class.on]="c.featured" (click)="toggleFeatured(c)"
+              [attr.aria-label]="c.featured ? 'Quitar de destacados' : 'Marcar como destacado'" [attr.aria-pressed]="c.featured">
+              <app-icon name="star" [size]="18" />
+            </button>
+          </td>
+          <td class="right actions">
+            <button class="icon-btn" type="button" aria-label="Editar" (click)="open(c)"><app-icon name="edit" [size]="17" /></button>
+            <button class="icon-btn danger" type="button" aria-label="Eliminar" (click)="remove(c)"><app-icon name="trash" [size]="17" /></button>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="8" class="empty-row">{{ loading() ? 'Cargando catálogo…' : 'Sin resultados.' }}</td></tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@if (pages() > 1) {
+  <nav class="pager" aria-label="Paginación">
+    <span class="muted">{{ filtered().length }} títulos</span>
+    <button class="icon-btn" type="button" [disabled]="page() <= 1" (click)="page.set(page() - 1)" aria-label="Página anterior"><app-icon name="chevron-left" /></button>
+    <span>Página {{ page() }} de {{ pages() }}</span>
+    <button class="icon-btn" type="button" [disabled]="page() >= pages()" (click)="page.set(page() + 1)" aria-label="Página siguiente"><app-icon name="chevron-right" /></button>
+  </nav>
+}
+
+@if (editing(); as current) {
+  <div class="backdrop" (click)="close()">
+    <form class="modal wide" [formGroup]="form" (ngSubmit)="save()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" novalidate>
+      <div class="modal-head">
+        <h2>{{ current === 'new' ? 'Nuevo contenido' : 'Editar «' + current.title + '»' }}</h2>
+        <button class="icon-btn" type="button" aria-label="Cerrar" (click)="close()"><app-icon name="x" /></button>
+      </div>
+      <div class="modal-body">
+        @if (formError()) { <div class="alert error" role="alert">{{ formError() }}</div> }
+        <div class="cols">
+          <div class="cover-col">
+            <div class="drop" [class.over]="dragging()" (dragover)="$event.preventDefault(); dragging.set(true)" (dragleave)="dragging.set(false)" (drop)="onDrop($event)">
+              <app-poster class="preview" [content]="{ title: form.controls.title.value || 'Sin título', imageUrl: form.controls.imageUrl.value, releaseYear: form.controls.releaseYear.value }" />
+              <label class="drop-cta">
+                <input type="file" accept="image/png,image/jpeg,image/webp,image/avif" (change)="onPick($event)" hidden />
+                <app-icon [name]="uploading() ? 'clock' : 'upload'" [size]="18" />
+                {{ uploading() ? 'Subiendo…' : 'Arrastra o elige una portada' }}
+              </label>
+            </div>
+            <small class="hint">JPG, PNG, WebP o AVIF · máx. 5 MB</small>
+            <label class="field">
+              <span class="sr-only">Biblioteca de portadas</span>
+              <select class="select" (change)="pickLibrary($any($event.target))">
+                <option value="">O elige de la biblioteca…</option>
+                @for (p of posters; track p.path) { <option [value]="p.path">{{ p.label }}</option> }
+              </select>
+            </label>
+          </div>
+          <div class="fields">
+            <label class="field">
+              <span>Título *</span>
+              <input class="input" formControlName="title" [class.invalid]="err('title', 'El título')" />
+              @if (err('title', 'El título'); as m) { <small class="error-text">{{ m }}</small> }
+            </label>
+            <div class="row2">
+              <div class="field">
+                <span class="label">Tipo</span>
+                <div class="seg full">
+                  <button type="button" [class.on]="form.controls.type.value === 'MOVIE'" (click)="form.controls.type.setValue('MOVIE')">Película</button>
+                  <button type="button" [class.on]="form.controls.type.value === 'SERIES'" (click)="form.controls.type.setValue('SERIES')">Serie</button>
+                </div>
+              </div>
+              <label class="field">
+                <span>Género *</span>
+                <select class="select" formControlName="genre" [class.invalid]="err('genre', 'El género')">
+                  @for (g of genres(); track g) { <option [value]="g">{{ g }}</option> }
+                </select>
+              </label>
+            </div>
+            <div class="row3">
+              <label class="field">
+                <span>Año *</span>
+                <input class="input" type="number" formControlName="releaseYear" [class.invalid]="err('releaseYear', 'El año')" />
+                @if (err('releaseYear', 'El año'); as m) { <small class="error-text">{{ m }}</small> }
+              </label>
+              <label class="field">
+                <span>{{ form.controls.type.value === 'SERIES' ? 'Min. por capítulo' : 'Duración (min)' }} *</span>
+                <input class="input" type="number" formControlName="durationMinutes" [class.invalid]="err('durationMinutes', 'La duración')" />
+                @if (err('durationMinutes', 'La duración'); as m) { <small class="error-text">{{ m }}</small> }
+              </label>
+              <label class="field">
+                <span>Temporadas</span>
+                <input class="input" type="number" formControlName="seasons" [readonly]="form.controls.type.value === 'MOVIE'" [class.invalid]="err('seasons', 'Las temporadas')" />
+                @if (err('seasons', 'Las temporadas'); as m) { <small class="error-text">{{ m }}</small> }
+              </label>
+            </div>
+            <div class="row2">
+              <label class="field">
+                <span>Clasificación</span>
+                <select class="select" formControlName="ageRating">
+                  @for (r of ratings; track r) { <option [value]="r">{{ r }}</option> }
+                </select>
+              </label>
+              <div class="field">
+                <span class="label">Portada principal</span>
+                <label class="check"><input type="checkbox" formControlName="featured" />Mostrar en el carrusel</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <label class="field">
+          <span>Descripción *</span>
+          <textarea class="textarea" formControlName="description" maxlength="2000" [class.invalid]="err('description', 'La descripción')"></textarea>
+          <small class="hint counter">{{ form.controls.description.value.length }}/2000</small>
+          @if (err('description', 'La descripción'); as m) { <small class="error-text">{{ m }}</small> }
+        </label>
+        <div class="row2">
+          <label class="field">
+            <span>URL de la portada *</span>
+            <input class="input" formControlName="imageUrl" [class.invalid]="err('imageUrl', 'La portada')" />
+            @if (err('imageUrl', 'La portada'); as m) { <small class="error-text">{{ m }}</small> }
+          </label>
+          <label class="field">
+            <span>Ruta del video (opcional)</span>
+            <input class="input" formControlName="videoPath" placeholder="peliculas/mi-video.mp4" [class.invalid]="err('videoPath', 'La ruta')" />
+            @if (err('videoPath', 'La ruta'); as m) { <small class="error-text">{{ m }}</small> } @else { <small class="hint">Archivo dentro del bucket privado «videos».</small> }
+          </label>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" type="button" (click)="close()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="saving() || uploading()">
+          {{ saving() ? 'Guardando…' : current === 'new' ? 'Crear contenido' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}

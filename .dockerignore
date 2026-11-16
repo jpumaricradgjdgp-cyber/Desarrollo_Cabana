@@ -2,3 +2,6 @@ backend/target
 backend/.env
 .git
 cabana.jar
+frontend-angular/node_modules
+frontend-angular/dist
+frontend-angular/.angular

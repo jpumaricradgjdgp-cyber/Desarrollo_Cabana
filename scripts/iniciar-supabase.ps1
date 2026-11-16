@@ -27,19 +27,20 @@ if ($listener) {
   try {
     $running = Invoke-RestMethod -Uri "http://localhost:$portNumber/api/config" -TimeoutSec 3
     if ($running.name -like 'Caba*' -and $running.demo -eq $false) {
-      Write-Host "Cabana con Supabase ya esta funcionando: http://localhost:$portNumber/pages/inicio.html"
+      Write-Host "Cabana con Supabase ya esta funcionando: http://localhost:$portNumber"
       exit 0
     }
   } catch {}
   throw "El puerto $portNumber esta ocupado. Cierra la consola del servidor anterior con Ctrl+C o elige otro puerto con `$env:PORT='8082'."
 }
-Write-Host "Iniciando Cabana conectado a Supabase. Abre http://localhost:$portNumber/pages/inicio.html"
+Write-Host "Iniciando Cabana conectado a Supabase. Abre http://localhost:$portNumber"
 $exitCode = 0
 Push-Location $projectDir
 try {
   $jarPath = Join-Path $projectDir 'cabana.jar'
   if (Test-Path -LiteralPath $jarPath) { & java -jar $jarPath }
   else {
+    & (Join-Path $PSScriptRoot 'compilar-frontend.ps1')
     Set-Location (Join-Path $projectDir 'backend')
     & .\mvnw.cmd spring-boot:run
   }

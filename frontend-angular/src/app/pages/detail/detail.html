@@ -1,0 +1,130 @@
+@if (notFound()) {
+  <div class="empty page">
+    <span class="icon-bubble"><app-icon name="film" [size]="28" /></span>
+    <h3>Este título ya no está en la cabaña</h3>
+    <p>Puede que lo hayan retirado del catálogo.</p>
+    <a class="btn btn-primary" routerLink="/inicio">Volver al inicio</a>
+  </div>
+} @else if (content(); as c) {
+  <article class="page">
+    <header class="backdrop-hero">
+      <div class="bg">
+        @if (hasImage(c)) { <img [src]="c.imageUrl" alt="" /> } @else { <div class="gen" [style.--h]="hue(c.title)"></div> }
+      </div>
+      <div class="hero-grid">
+        <app-poster class="cover" [content]="c" />
+        <div class="info">
+          <a class="back" routerLink="/{{ c.type === 'MOVIE' ? 'peliculas' : 'series' }}"><app-icon name="arrow-left" [size]="16" />{{ typeLabel(c.type, true) }}</a>
+          <h1>{{ c.title }}</h1>
+          <p class="meta">
+            <span>{{ c.releaseYear }}</span>
+            <span class="badge">{{ c.ageRating }}</span>
+            <span>{{ lengthLabel(c) }}</span>
+            <span class="pill">{{ c.genre }}</span>
+            @if (reviews()?.count) {
+              <span class="gold"><app-icon name="star" [size]="15" />{{ reviews()!.average.toFixed(1) }} <small>({{ reviews()!.count }})</small></span>
+            }
+          </p>
+          <p class="desc">{{ c.description }}</p>
+          @if (percent()) {
+            <div class="progress">
+              <span class="track"><span [style.width.%]="percent()"></span></span>
+              <small>Te quedaste en {{ clock(resumeAt()) }}</small>
+            </div>
+          }
+          <div class="actions">
+            <button class="btn btn-primary btn-lg" type="button" (click)="play()">
+              <app-icon name="play" />{{ percent() ? 'Continuar' : 'Reproducir' }}
+            </button>
+            <button class="btn btn-glass btn-lg" type="button" (click)="library.toggle(c)">
+              <app-icon [name]="library.isSaved(c.id) ? 'check' : 'plus'" />{{ library.isSaved(c.id) ? 'En Mi lista' : 'Mi lista' }}
+            </button>
+            <a class="btn btn-glass btn-lg" href="#resenas"><app-icon name="star" />Calificar</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Reseñas -->
+    <section class="section reviews" id="resenas">
+      <div class="section-head"><h2><app-icon name="message" />Reseñas</h2></div>
+      <div class="reviews-grid">
+        <aside class="summary card">
+          <strong class="big">{{ (reviews()?.average ?? 0).toFixed(1) }}</strong>
+          <app-rating-stars [value]="reviews()?.average ?? 0" [size]="20" />
+          <small>{{ reviews()?.count ?? 0 }} {{ reviews()?.count === 1 ? 'reseña' : 'reseñas' }}</small>
+          <div class="dist">
+            @for (d of distribution(); track d.n) {
+              <div class="dist-row"><span>{{ d.n }}</span><span class="track"><span [style.width.%]="d.pct"></span></span><span>{{ d.count }}</span></div>
+            }
+          </div>
+        </aside>
+
+        <div class="list">
+          @if (!auth.isLoggedIn()) {
+            <div class="card cta">
+              <p><strong>¿Ya la viste?</strong> Inicia sesión para dejar tu calificación.</p>
+              <a class="btn btn-primary btn-sm" routerLink="/login" [queryParams]="{ volver: '/titulo/' + c.id }">Iniciar sesión</a>
+            </div>
+          } @else if (!mine() || editing()) {
+            <form class="card review-form" [formGroup]="form" (ngSubmit)="submit()">
+              <h3>{{ mine() ? 'Edita tu reseña' : 'Tu reseña' }}</h3>
+              <app-rating-stars formControlName="rating" [editable]="true" />
+              <label class="field">
+                <span class="sr-only">Comentario</span>
+                <textarea class="textarea" formControlName="comment" maxlength="500" placeholder="¿Qué te pareció? (opcional)"
+                  [class.invalid]="form.controls.comment.invalid"></textarea>
+                <small class="hint counter">{{ form.controls.comment.value.length }}/500</small>
+              </label>
+              <div class="form-actions">
+                @if (editing()) { <button class="btn btn-ghost" type="button" (click)="editing.set(false)">Cancelar</button> }
+                <button class="btn btn-primary" type="submit" [disabled]="saving() || form.controls.rating.value < 1">
+                  {{ saving() ? 'Publicando…' : mine() ? 'Guardar cambios' : 'Publicar reseña' }}
+                </button>
+              </div>
+            </form>
+          }
+
+          @if (mine(); as r) {
+            @if (!editing()) {
+              <div class="review card mine">
+                <span class="avatar">{{ initials(r.author) }}</span>
+                <div class="body">
+                  <div class="row"><strong>Tu reseña</strong><app-rating-stars [value]="r.rating" /><small>{{ r.createdAt | date: 'd MMM y' }}</small></div>
+                  @if (r.comment) { <p>{{ r.comment }}</p> }
+                  <div class="row tools">
+                    <button class="btn btn-ghost btn-sm" type="button" (click)="editing.set(true)"><app-icon name="edit" [size]="15" />Editar</button>
+                    <button class="btn btn-ghost btn-sm" type="button" (click)="remove()"><app-icon name="trash" [size]="15" />Eliminar</button>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+
+          @for (r of others(); track r.id) {
+            <div class="review card">
+              <span class="avatar" [style.--h]="hue(r.author)">{{ initials(r.author) }}</span>
+              <div class="body">
+                <div class="row"><strong>{{ r.author }}</strong><app-rating-stars [value]="r.rating" /><small>{{ r.createdAt | date: 'd MMM y' }}</small></div>
+                @if (r.comment) { <p>{{ r.comment }}</p> }
+              </div>
+            </div>
+          } @empty {
+            @if (!mine()) { <p class="hint none">Aún no hay reseñas. ¡Sé la primera persona en opinar!</p> }
+          }
+        </div>
+      </div>
+    </section>
+
+    @if (related().length) {
+      <section class="section">
+        <div class="section-head"><h2><app-icon name="layers" />También te puede gustar</h2></div>
+        <div class="grid">
+          @for (item of related(); track item.id) { <app-content-card [content]="item" /> }
+        </div>
+      </section>
+    }
+  </article>
+} @else {
+  <div class="skeleton" style="height: 420px; border-radius: 20px"></div>
+}

@@ -1,6 +1,21 @@
 # Cabaña · Servicio de streaming
 
-Proyecto inicial funcional con backend Java 21 y Spring Boot 3.5.16, frontend HTML/CSS/JavaScript y configuración para Supabase PostgreSQL, Auth y Storage. Usa el logo, las portadas y los iconos entregados. El diseño sigue la navegación lateral, el banner, el catálogo y el formulario de tu referencia, con Azul noche, Claro y Halloween.
+Plataforma de streaming con **frontend Angular 21** y **backend Java 21 + Spring Boot 3.5.16**, autenticación JWT con roles, documentación **Swagger** y configuración para Supabase PostgreSQL, Auth y Storage. Conserva el logo, las portadas y los temas Azul noche, Claro y Halloween.
+
+## Novedades de la versión 2.0
+
+- **Frontend migrado a Angular** (`frontend-angular/`): componentes standalone, rutas con lazy loading, guards por rol, interceptor JWT y formularios reactivos con validaciones. Detalles en [Frontend Angular](docs/ANGULAR.md).
+- **Ficha de cada título** con recomendaciones, y **reproductor** que reanuda donde te quedaste ("Continuar viendo").
+- **Reseñas y calificaciones** de 1 a 5 estrellas, con promedio y distribución.
+- **Panel ADMIN** con indicadores, gráficos por género, CRUD con búsqueda y paginación, subida de portadas por arrastre y moderación de reseñas.
+- **Swagger UI** en `/swagger-ui.html`.
+- Bases existentes en Supabase: ejecuta `supabase/07_resenas.sql` después de la migración 06, y `supabase/08_catalogo_portadas.sql` para cargar los 26 títulos con portada.
+- **Catálogo ampliado a 39 títulos** con portadas en `frontend-angular/public/assets/catalogo/`. Si falta un archivo, la interfaz genera una portada tipográfica; el panel ADMIN permite elegir cualquier portada de esa biblioteca.
+
+| Cuenta demo | Correo | Contraseña |
+|---|---|---|
+| Administrador | admin@cabana.demo | Cabana2026! |
+| Usuario | usuario@cabana.demo | Cabana2026! |
 
 ## Esquema normalizado
 
@@ -8,7 +23,7 @@ Esta versión requiere la migración supabase/06_normalizacion_generos.sql en ba
 
 ## Abrir Cabaña en Windows
 
-`Iniciar_Cabana.cmd` usa Supabase cuando existe `backend/.env`; sin ese archivo inicia la demostración. En esta laptop la configuración privada de Supabase se guarda localmente y usa el puerto **8081**. Abre [Cabaña conectada](http://localhost:8081/pages/inicio.html). Registra una cuenta real y confirma el correo antes de iniciar sesión. El administrador de demostración solo funciona en el perfil demo.
+`Iniciar_Cabana.cmd` usa Supabase cuando existe `backend/.env`; sin ese archivo inicia la demostración. En esta laptop la configuración privada de Supabase se guarda localmente y usa el puerto **8081**. Abre [Cabaña conectada](http://localhost:8081). Registra una cuenta real y confirma el correo antes de iniciar sesión. El administrador de demostración solo funciona en el perfil demo.
 
 `Iniciar_Supabase.cmd` exige la configuración real. Si Cabaña con Supabase ya está abierta en ese puerto, muestra su dirección en lugar de arrancar otra instancia.
 
@@ -77,14 +92,13 @@ cabana/
 │       │   └── service/      Lógica de negocio y transacciones
 │       ├── main/resources/  Perfiles demo y Supabase
 │       └── test/            Pruebas de integración
-├── frontend/
-│   ├── index.html
-│   ├── css/                 Estilos base, Cabaña y Halloween
-│   ├── js/                  Aplicación, rutas, temas y vista estática
-│   │   ├── components/      Iconos compartidos
-│   │   └── data/            Biblioteca de portadas recuperadas
-│   ├── pages/               Ocho páginas HTML independientes
-│   └── assets/              Marca, fondos, iconos y catalogo/ con portadas
+├── frontend-angular/         Frontend Angular 21 (ver docs/ANGULAR.md)
+│   ├── src/app/core/        Servicios, interceptor JWT, guards y validadores
+│   ├── src/app/layout/      Barra lateral, barra superior y notificaciones
+│   ├── src/app/shared/      Componentes reutilizables (tarjeta, estrellas, carrusel)
+│   ├── src/app/pages/       Vistas: inicio, catálogo, detalle, reproductor, admin…
+│   └── public/assets/       Marca, fondos y portadas
+├── frontend/                Versión HTML/JS anterior (solo referencia de Avances 1 y 2)
 ├── supabase/                 SQL de esquema, catálogo y administrador
 ├── scripts/                 Inicio en Windows
 ├── docs/                    Arquitectura, API y adaptación de la estructura

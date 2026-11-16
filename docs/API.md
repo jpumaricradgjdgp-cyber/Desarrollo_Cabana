@@ -1,6 +1,6 @@
 # API REST Cabaña
 
-Base local: `http://localhost:8080/api`. Las respuestas usan JSON. En rutas privadas envía `Authorization: Bearer <accessToken>`. Usa correo electrónico como identificador de acceso, aunque el diseño de referencia dice Usuario.
+Base local: `http://localhost:8080/api`. Documentación interactiva con Swagger UI en `http://localhost:8080/swagger-ui.html` (botón **Authorize** para pegar el token). Las respuestas usan JSON. En rutas privadas envía `Authorization: Bearer <accessToken>`. Usa correo electrónico como identificador de acceso, aunque el diseño de referencia dice Usuario.
 
 | Método | Ruta | Acceso | Uso |
 |---|---|---|---|
@@ -23,7 +23,14 @@ Base local: `http://localhost:8080/api`. Las respuestas usan JSON. En rutas priv
 | GET | /admin/catalog | ADMIN | Catálogo con rutas privadas para edición |
 | POST | /admin/catalog | ADMIN | Crear contenido |
 | PUT | /admin/catalog/{id} | ADMIN | Actualizar contenido |
-| DELETE | /admin/catalog/{id} | ADMIN | Eliminar y limpiar referencias |
+| DELETE | /admin/catalog/{id} | ADMIN | Eliminar y limpiar referencias (listas, progreso y reseñas) |
+| GET | /catalog/{id}/reviews | Público | Reseñas, promedio y cantidad; marca `mine` si envías token |
+| GET | /ratings | Público | Promedio y cantidad de reseñas por contenido |
+| PUT | /me/reviews/{id} | USER/ADMIN | Crear o actualizar mi reseña `{rating:1-5, comment}` |
+| DELETE | /me/reviews/{id} | USER/ADMIN | Eliminar mi reseña |
+| GET | /admin/reviews | ADMIN | Todas las reseñas para moderación |
+| DELETE | /admin/reviews/{id} | ADMIN | Eliminar una reseña |
+| GET | /admin/stats | ADMIN | Indicadores del panel: totales, títulos por género y mejor calificados |
 
 ## Inicio de sesión
 
@@ -72,3 +79,11 @@ Importa `docs/Cabana.postman_collection.json` para ejecutar solicitudes. Primero
 `POST /api/admin/images` recibe `multipart/form-data` con el campo `file` y el JWT del administrador. Devuelve `{"imageUrl":"https://…/storage/v1/object/public/portadas/…"}`; utiliza esa URL en el JSON de alta/edición. En demo devuelve `/assets/uploads/…`, disponible durante esa ejecución. El servidor comprueba el formato real, limita dimensiones, normaliza a un máximo de 1920 px y elimina metadatos al recodificar. Devuelve 413 si supera 5 MB y 415 para formatos distintos de JPG/PNG. El navegador genera automáticamente el Content-Type y boundary de FormData.
 
 El frontend también permite WebP y AVIF, incluso descargados con extensión JPG: detecta la firma real y los convierte mediante canvas antes del envío. La API continúa recibiendo únicamente raster JPG/PNG y verificándolos en Java. No se cambia la lista de tipos permitidos del bucket ni se admiten SVG.
+
+## Reseñas
+
+```json
+{"rating":5,"comment":"La mejor serie de viajes en el tiempo."}
+```
+
+Cada usuario tiene una reseña por contenido (restricción única `user_id, content_id`): un segundo `PUT` la actualiza. `rating` debe estar entre 1 y 5 y `comment` admite hasta 500 caracteres. En Supabase ejecuta antes `supabase/07_resenas.sql`.
