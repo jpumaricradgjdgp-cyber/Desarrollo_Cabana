@@ -8,8 +8,8 @@ import pe.cabana.model.*;
 import pe.cabana.repository.*;
 @Component @Profile("demo")
 public class DemoData implements CommandLineRunner {
-  private final AccountRepository accounts;private final ContentRepository contents;
-  public DemoData(AccountRepository a,ContentRepository c){accounts=a;contents=c;}
+  private final GenreRepository genres;private final AccountRepository accounts;private final ContentRepository contents;
+  public DemoData(AccountRepository a,ContentRepository c,GenreRepository g){accounts=a;contents=c;genres=g;}
   public void run(String...args){
     var a=new Account();a.id=UUID.fromString("10000000-0000-0000-0000-000000000001");a.email="admin@cabana.demo";a.name="Administrador";a.role="ADMIN";a.passwordHash=new BCryptPasswordEncoder().encode("Cabana2026!");accounts.save(a);
     add("Stranger Things","Un grupo de amigos descubre un mundo paralelo y secretos que cambiarán sus vidas para siempre.","SERIES",2016,50,4,"Ciencia ficción","stranger.jpg",true,"16+");
@@ -27,6 +27,6 @@ public class DemoData implements CommandLineRunner {
     add("Viernes 13, parte 2","Una nueva generación vuelve a Crystal Lake. La leyenda de Jason convierte una escapada al bosque en una noche de terror.","MOVIE",1981,86,0,"Terror","jason-movie.png",false,"18+");
   }
   private void add(String title,String desc,String type,int year,int minutes,int seasons,String genre,String image,boolean featured,String rating){
-    var c=new Content();c.title=title;c.description=desc;c.type=type;c.releaseYear=year;c.durationMinutes=minutes;c.seasons=seasons;c.genre=genre;c.imageUrl=image.isEmpty()?"/assets/poster-placeholder.svg":"/assets/"+image;c.featured=featured;c.ageRating=rating;contents.save(c);
+    var c=new Content();c.title=title;c.description=desc;c.type=type;c.releaseYear=year;c.durationMinutes=minutes;c.seasons=seasons;c.genre=genres.findByName(genre).orElseGet(()->{var g=new Genre();g.name=genre;return genres.save(g);});c.imageUrl=image.isEmpty()?"/assets/poster-placeholder.svg":"/assets/"+image;c.featured=featured;c.ageRating=rating;contents.save(c);
   }
 }

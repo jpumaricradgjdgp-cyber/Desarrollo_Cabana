@@ -9,10 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 @Service @Transactional(readOnly=true)
 public class CatalogService {
-  private final ContentRepository contents; private final SavedRepository saved; private final ProgressRepository progress;
-  public CatalogService(ContentRepository c,SavedRepository s,ProgressRepository p){contents=c;saved=s;progress=p;}
+  private final GenreRepository genres; private final ContentRepository contents; private final SavedRepository saved; private final ProgressRepository progress;
+  public CatalogService(ContentRepository c,SavedRepository s,ProgressRepository p,GenreRepository g){contents=c;saved=s;progress=p;genres=g;}
   public List<ContentView> search(String q,String type,String genre){return contents.search(q,type,genre).stream().map(ContentView::of).toList();}
-  public List<String> genres(){return contents.genres();}
+  public List<AdminContentView> adminCatalog(){return contents.search("","","").stream().map(AdminContentView::of).toList();}
+  public List<String> genres(){return genres.findAllByOrderByNameAsc().stream().map(Genre::getName).toList();}
   public Content require(UUID id){return contents.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Contenido no encontrado"));}
   public ContentView get(UUID id){return ContentView.of(require(id));}
   public List<ContentView> list(UUID user){return saved.findByUserId(user).stream().map(s->ContentView.of(s.content)).toList();}
@@ -23,7 +24,7 @@ public class CatalogService {
   @Transactional public ContentView put(UUID id,ContentInput input){
     if(!safeImage(input.imageUrl())) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"La imagen debe usar HTTPS o /assets/");
     String video=input.videoPath();if(video!=null && !video.isBlank() && !video.matches("[a-zA-Z0-9_/-]+\\.[a-zA-Z0-9]+")) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Usa una ruta del bucket videos, por ejemplo peliculas/demo.mp4");
-    var c=id==null ? new Content() : require(id);c.title=input.title();c.description=input.description();c.type=input.type();c.releaseYear=input.releaseYear();c.durationMinutes=input.durationMinutes();c.seasons=input.seasons();c.genre=input.genre();c.imageUrl=input.imageUrl();c.videoPath=video;c.featured=input.featured();c.ageRating=input.ageRating();return ContentView.of(contents.save(c));
+    var c=id==null ? new Content() : require(id);c.title=input.title();c.description=input.description();c.type=input.type();c.releaseYear=input.releaseYear();c.durationMinutes=input.durationMinutes();c.seasons=input.seasons();c.genre=genres.findByName(input.genre().strip()).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST,"Selecciona un género del catálogo"));c.imageUrl=input.imageUrl();c.videoPath=video;c.featured=input.featured();c.ageRating=input.ageRating();return ContentView.of(contents.save(c));
   }
   private boolean safeImage(String value){ if(value.startsWith("/assets/") && !value.contains(".."))return true;try{var u=java.net.URI.create(value);return "https".equals(u.getScheme())&&u.getHost()!=null;}catch(Exception e){return false;}}
   @Transactional public void delete(UUID id){require(id);saved.deleteByContentId(id);progress.deleteByContentId(id);contents.deleteById(id);}

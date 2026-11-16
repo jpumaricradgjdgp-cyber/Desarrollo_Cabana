@@ -22,7 +22,7 @@ public class CatalogController {
   @GetMapping("/me/progress") List<ProgressView> progress(@AuthenticationPrincipal Jwt j){return catalog.progress(user(j));}
   @PutMapping("/me/progress/{id}") void progress(@AuthenticationPrincipal Jwt j,@PathVariable UUID id,@Valid @RequestBody Position p){catalog.progress(user(j),id,p.seconds());}
   @GetMapping("/playback/{id}") PlaybackService.Playback play(@PathVariable UUID id){return playback.play(id);}
-  @GetMapping("/admin/catalog") List<pe.cabana.model.Content> adminCatalog(){return catalog.search("","","").stream().map(c->catalog.require(c.id())).toList();}
+  @GetMapping("/admin/catalog") List<AdminContentView> adminCatalog(){return catalog.adminCatalog();}
   @PostMapping("/admin/catalog") ContentView create(@Valid @RequestBody ContentInput p){return catalog.put(null,p);}
   @PutMapping("/admin/catalog/{id}") ContentView update(@PathVariable UUID id,@Valid @RequestBody ContentInput p){return catalog.put(id,p);}
   @DeleteMapping("/admin/catalog/{id}") void delete(@PathVariable UUID id){catalog.delete(id);}

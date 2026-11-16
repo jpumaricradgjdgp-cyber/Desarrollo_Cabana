@@ -2,6 +2,10 @@
 
 Proyecto inicial funcional con backend Java 21 y Spring Boot 3.5.16, frontend HTML/CSS/JavaScript y configuración para Supabase PostgreSQL, Auth y Storage. Usa el logo, las portadas y los iconos entregados. El diseño sigue la navegación lateral, el banner, el catálogo y el formulario de tu referencia, con Azul noche, Claro y Halloween.
 
+## Esquema normalizado
+
+Esta versión requiere la migración supabase/06_normalizacion_generos.sql en bases existentes. Consulta [Normalización y conservación de datos](docs/NORMALIZACION.md) antes de arrancar. El panel utiliza un catálogo de géneros y la API mantiene su contrato público.
+
 ## Abrir Cabaña en Windows
 
 `Iniciar_Cabana.cmd` usa Supabase cuando existe `backend/.env`; sin ese archivo inicia la demostración. En esta laptop la configuración privada de Supabase se guarda localmente y usa el puerto **8081**. Abre [Cabaña conectada](http://localhost:8081/pages/inicio.html). Registra una cuenta real y confirma el correo antes de iniciar sesión. El administrador de demostración solo funciona en el perfil demo.
