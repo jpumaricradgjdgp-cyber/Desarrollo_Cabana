@@ -54,7 +54,7 @@ class SupabaseContractTest {
     var jwt=new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.ES256).keyID("test-key").build(),claims);jwt.sign(new ECDSASigner(signingKey));return jwt.serialize();
   }
   @DynamicPropertySource static void properties(DynamicPropertyRegistry registry){registry.add("cabana.supabase-url",()->base);}
-  @Autowired MockMvc mvc;@Autowired JwtDecoder decoder;@Autowired AccountRepository accounts;@Autowired ContentRepository contents;
+  @Autowired MockMvc mvc;@Autowired JwtDecoder decoder;@Autowired AccountRepository accounts;@Autowired ContentRepository contents;@Autowired GenreRepository genres;
   @AfterAll static void stop(){server.stop(0);}
   @Test void asymmetricJwtValidatesIssuerAndAudience() throws Exception {
     assertThat(decoder.decode(token).getSubject()).isEqualTo(USER.toString());
@@ -73,7 +73,7 @@ class SupabaseContractTest {
     mvc.perform(get("/api/admin/catalog").header("Authorization","Bearer "+token)).andExpect(status().isForbidden());
     var a=accounts.findById(USER).orElseThrow();a.role="ADMIN";accounts.save(a);
     mvc.perform(get("/api/admin/catalog").header("Authorization","Bearer "+token)).andExpect(status().isOk());
-    var c=new Content();c.title="Contrato Storage";c.description="Prueba";c.type="MOVIE";c.releaseYear=2026;c.durationMinutes=90;c.seasons=0;c.genre="Drama";c.imageUrl="/assets/dark.jpg";c.videoPath="peliculas/prueba.mp4";c.ageRating="13+";contents.save(c);
+    var c=new Content();c.title="Contrato Storage";c.description="Prueba";c.type="MOVIE";c.releaseYear=2026;c.durationMinutes=90;c.seasons=0;c.genre=genres.findByName("Drama").orElseGet(()->{var g=new pe.cabana.model.Genre();g.name="Drama";return genres.save(g);});c.imageUrl="/assets/dark.jpg";c.videoPath="peliculas/prueba.mp4";c.ageRating="13+";contents.save(c);
     mvc.perform(get("/api/playback/"+c.id).header("Authorization","Bearer "+token)).andExpect(status().isOk()).andExpect(jsonPath("$.demo").value(false)).andExpect(jsonPath("$.url").value(base+"/storage/v1/object/sign/videos/peliculas/prueba.mp4?token=test"));
   }
   @Test void coverUploadUsesCallerJwtAndPublicKeyRatherThanServerSecret() throws Exception {

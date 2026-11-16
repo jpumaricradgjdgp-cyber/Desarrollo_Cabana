@@ -18,7 +18,7 @@ public class SecurityConfig {
     http.csrf(c->c.disable()).cors(c->{}).sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
     http.authorizeHttpRequests(a->a
       .requestMatchers("/api/auth/login","/api/auth/register","/api/auth/refresh","/api/auth/logout","/api/config").permitAll()
-      .requestMatchers(org.springframework.http.HttpMethod.GET,"/api/catalog/**","/api/genres").permitAll()
+      .requestMatchers(org.springframework.http.HttpMethod.GET,"/api/catalog/**","/api/genres","/api/ratings").permitAll()
       .requestMatchers("/api/admin/**").hasRole("ADMIN")
       .requestMatchers("/api/**").authenticated()
       .requestMatchers(org.springframework.http.HttpMethod.GET,"/**").permitAll()
@@ -31,7 +31,8 @@ public class SecurityConfig {
     return http.build();
   }
   @Bean CorsConfigurationSource cors(@Value("${cabana.allowed-origin}") String origin) {
-    var c=new CorsConfiguration(); c.setAllowedOrigins(List.of(origin)); c.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS")); c.setAllowedHeaders(List.of("Authorization","Content-Type")); c.setAllowCredentials(true);
+    // Admite varios orígenes separados por coma: el servidor Java y el servidor de desarrollo de Angular.
+    var c=new CorsConfiguration(); c.setAllowedOrigins(Arrays.stream(origin.split(",")).map(String::strip).filter(s->!s.isEmpty()).toList()); c.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS")); c.setAllowedHeaders(List.of("Authorization","Content-Type")); c.setAllowCredentials(true);
     var source=new UrlBasedCorsConfigurationSource(); source.registerCorsConfiguration("/**",c); return source;
   }
   @Bean @Profile("supabase") JwtDecoder supabaseDecoder(@Value("${cabana.supabase-url}") String url) {

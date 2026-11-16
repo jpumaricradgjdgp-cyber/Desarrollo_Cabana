@@ -9,7 +9,8 @@ public class Content {
   @Column(nullable=false) public int releaseYear;
   @Column(nullable=false) public int durationMinutes;
   @Column(nullable=false) public int seasons;
-  @Column(nullable=false,length=30) public String genre;
+  @ManyToOne(optional=false,fetch=FetchType.LAZY)
+  @JoinColumn(name="genre_id",nullable=false) public Genre genre;
   @Column(nullable=false,length=1000) public String imageUrl;
   @Column(length=1000) public String videoPath;
   @Column(nullable=false) public boolean featured;

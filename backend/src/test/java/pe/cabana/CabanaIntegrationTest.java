@@ -74,6 +74,41 @@ class CabanaIntegrationTest {
     mvc.perform(put("/api/me/progress/"+id).header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON).content("{\"seconds\":-1}")).andExpect(status().isBadRequest());
     mvc.perform(get("/api/playback/"+id).header("Authorization","Bearer "+token)).andExpect(status().isOk()).andExpect(jsonPath("$.demo").value(true));
   }
+  @Test void reviewsAreOnePerUserAndUpdateTheAverage() throws Exception {
+    String a=register("critic1"),b=register("critic2"),id=contentId();
+    mvc.perform(get("/api/auth/me").header("Authorization","Bearer "+a)).andExpect(status().isOk());
+    mvc.perform(get("/api/auth/me").header("Authorization","Bearer "+b)).andExpect(status().isOk());
+    long before=json.readTree(mvc.perform(get("/api/catalog/"+id+"/reviews")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).get("count").asLong();
+    mvc.perform(put("/api/me/reviews/"+id)).andExpect(status().isUnauthorized());
+    mvc.perform(put("/api/me/reviews/"+id).header("Authorization","Bearer "+a).contentType(MediaType.APPLICATION_JSON).content("{\"rating\":6}")).andExpect(status().isBadRequest());
+    mvc.perform(put("/api/me/reviews/"+id).header("Authorization","Bearer "+a).contentType(MediaType.APPLICATION_JSON).content("{\"rating\":2,\"comment\":\"Regular\"}")).andExpect(status().isOk()).andExpect(jsonPath("$.mine").value(true));
+    mvc.perform(put("/api/me/reviews/"+id).header("Authorization","Bearer "+a).contentType(MediaType.APPLICATION_JSON).content("{\"rating\":4,\"comment\":\"Mejor de lo que pensaba\"}")).andExpect(status().isOk());
+    mvc.perform(put("/api/me/reviews/"+id).header("Authorization","Bearer "+b).contentType(MediaType.APPLICATION_JSON).content("{\"rating\":5}")).andExpect(status().isOk());
+    mvc.perform(get("/api/catalog/"+id+"/reviews").header("Authorization","Bearer "+b)).andExpect(status().isOk())
+      .andExpect(jsonPath("$.count").value(before+2)).andExpect(jsonPath("$.reviews[?(@.mine==true)].rating").value(5));
+    mvc.perform(get("/api/ratings")).andExpect(status().isOk()).andExpect(jsonPath("$[?(@.contentId=='"+id+"')]").exists());
+    mvc.perform(delete("/api/me/reviews/"+id).header("Authorization","Bearer "+b)).andExpect(status().isOk());
+    mvc.perform(get("/api/catalog/"+id+"/reviews")).andExpect(jsonPath("$.count").value(before+1));
+  }
+  @Test void onlyAdminsSeeStatsAndModerateReviews() throws Exception {
+    String user=register("moderated"),token=admin(),id=contentId();
+    mvc.perform(get("/api/auth/me").header("Authorization","Bearer "+user)).andExpect(status().isOk());
+    var created=mvc.perform(put("/api/me/reviews/"+id).header("Authorization","Bearer "+user).contentType(MediaType.APPLICATION_JSON).content("{\"rating\":1,\"comment\":\"spam\"}")).andExpect(status().isOk()).andReturn();
+    String reviewId=json.readTree(created.getResponse().getContentAsString()).get("id").asText();
+    mvc.perform(get("/api/admin/stats").header("Authorization","Bearer "+user)).andExpect(status().isForbidden());
+    mvc.perform(delete("/api/admin/reviews/"+reviewId).header("Authorization","Bearer "+user)).andExpect(status().isForbidden());
+    mvc.perform(get("/api/admin/stats").header("Authorization","Bearer "+token)).andExpect(status().isOk())
+      .andExpect(jsonPath("$.movies").isNumber()).andExpect(jsonPath("$.series").isNumber()).andExpect(jsonPath("$.byGenre").isArray()).andExpect(jsonPath("$.topRated").isArray());
+    mvc.perform(get("/api/admin/reviews").header("Authorization","Bearer "+token)).andExpect(status().isOk()).andExpect(jsonPath("$[?(@.id=='"+reviewId+"')].contentTitle").exists());
+    mvc.perform(delete("/api/admin/reviews/"+reviewId).header("Authorization","Bearer "+token)).andExpect(status().isOk());
+    mvc.perform(delete("/api/admin/reviews/"+reviewId).header("Authorization","Bearer "+token)).andExpect(status().isNotFound());
+  }
+  @Test void swaggerDocumentsTheApiWithBearerSecurity() throws Exception {
+    mvc.perform(get("/v3/api-docs")).andExpect(status().isOk())
+      .andExpect(jsonPath("$.info.title").value("Cabaña API"))
+      .andExpect(jsonPath("$.components.securitySchemes.bearer.scheme").value("bearer"))
+      .andExpect(jsonPath("$.paths['/api/me/reviews/{id}']").exists());
+  }
   static byte[] raster(String format,int width,int height) throws Exception {
     var out=new java.io.ByteArrayOutputStream();
     javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(width,height,java.awt.image.BufferedImage.TYPE_INT_RGB),format,out);
